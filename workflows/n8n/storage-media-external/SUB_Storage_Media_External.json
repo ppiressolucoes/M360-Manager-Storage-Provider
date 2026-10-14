@@ -1,0 +1,646 @@
+{
+  "name": "SUB | Storage Media External",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -976,
+        -256
+      ],
+      "id": "333601d1-d732-4add-ac97-a93e712ed8b6",
+      "name": "Start Storage"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CALL SP_Core_Storage_Reserva(NULL, 3);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -736,
+        -256
+      ],
+      "id": "48278358-b291-4ddb-9d41-db86cfca8477",
+      "name": "SP - Storage Provider Reserva"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "90bc238a-9159-41e9-b4d7-6a69925fc4df",
+              "leftValue": "={{ Number($json.reserva_ok) }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -272,
+        -256
+      ],
+      "id": "53edc504-fab2-49d7-8614-ea468f9ed471",
+      "name": "IF | Reserva OK?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "\nconst item = $input.item;\nconst j = item.json;\n\nif (!item.binary?.data) {\n  throw new Error('Arquivo binário ausente em binary.data.');\n}\n\nconst buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\n\nif (!buffer || buffer.length === 0) {\n  throw new Error('O arquivo binário está vazio.');\n}\n\n// SHA-256 em JavaScript puro, sem require('crypto').\nfunction sha256(asBytes) {\n  const K = [\n    0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,\n    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,\n    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,\n    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,\n    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,\n    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,\n    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,\n    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2\n  ];\n\n  const rotr = (x,n) => (x >>> n) | (x << (32-n));\n  const bytes = Array.from(asBytes);\n  const bitLen = bytes.length * 8;\n\n  bytes.push(0x80);\n  while ((bytes.length % 64) !== 56) bytes.push(0);\n\n  const high = Math.floor(bitLen / 0x100000000);\n  const low = bitLen >>> 0;\n\n  for (let i=3; i>=0; i--) bytes.push((high >>> (i*8)) & 255);\n  for (let i=3; i>=0; i--) bytes.push((low >>> (i*8)) & 255);\n\n  let H = [\n    0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,\n    0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19\n  ];\n\n  for (let offset=0; offset<bytes.length; offset+=64) {\n    const w = new Array(64);\n\n    for (let i=0; i<16; i++) {\n      const p=offset+i*4;\n      w[i]=((bytes[p]<<24)|(bytes[p+1]<<16)|(bytes[p+2]<<8)|bytes[p+3])>>>0;\n    }\n\n    for (let i=16; i<64; i++) {\n      const x=w[i-15], y=w[i-2];\n      const s0=rotr(x,7)^rotr(x,18)^(x>>>3);\n      const s1=rotr(y,17)^rotr(y,19)^(y>>>10);\n      w[i]=(w[i-16]+s0+w[i-7]+s1)>>>0;\n    }\n\n    let [a,b,c,d,e,f,g,h]=H;\n\n    for (let i=0; i<64; i++) {\n      const S1=rotr(e,6)^rotr(e,11)^rotr(e,25);\n      const ch=(e&f)^(~e&g);\n      const t1=(h+S1+ch+K[i]+w[i])>>>0;\n      const S0=rotr(a,2)^rotr(a,13)^rotr(a,22);\n      const maj=(a&b)^(a&c)^(b&c);\n      const t2=(S0+maj)>>>0;\n\n      h=g; g=f; f=e; e=(d+t1)>>>0;\n      d=c; c=b; b=a; a=(t1+t2)>>>0;\n    }\n\n    H=[\n      (H[0]+a)>>>0,(H[1]+b)>>>0,(H[2]+c)>>>0,(H[3]+d)>>>0,\n      (H[4]+e)>>>0,(H[5]+f)>>>0,(H[6]+g)>>>0,(H[7]+h)>>>0\n    ];\n  }\n\n  return H.map(v=>v.toString(16).padStart(8,'0')).join('');\n}\n\nconst sha = sha256(buffer);\n\nconst fileName =\n  item.binary.data.fileName ||\n  j.original_filename ||\n  'featured-image';\n\nconst mimeType =\n  item.binary.data.mimeType ||\n  j.mime_type ||\n  'application/octet-stream';\n\nlet width = null;\nlet height = null;\n\n// Dimensões JPEG\nif (mimeType === 'image/jpeg' || /\\.jpe?g$/i.test(fileName)) {\n  let p = 2;\n\n  while (p < buffer.length) {\n    if (buffer[p] !== 0xFF) {\n      p++;\n      continue;\n    }\n\n    const marker = buffer[p + 1];\n    if (marker === 0xD8 || marker === 0xD9) {\n      p += 2;\n      continue;\n    }\n\n    if (p + 3 >= buffer.length) break;\n\n    const len = buffer.readUInt16BE(p + 2);\n    if (len < 2 || p + 2 + len > buffer.length) break;\n\n    if ([0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF].includes(marker)) {\n      height = buffer.readUInt16BE(p + 5);\n      width = buffer.readUInt16BE(p + 7);\n      break;\n    }\n\n    p += 2 + len;\n  }\n}\n\n// Dimensões PNG\nif (\n  mimeType === 'image/png' ||\n  /\\.png$/i.test(fileName)\n) {\n  if (\n    buffer.length >= 24 &&\n    buffer[0] === 0x89 &&\n    buffer.toString('ascii',1,4) === 'PNG'\n  ) {\n    width = buffer.readUInt32BE(16);\n    height = buffer.readUInt32BE(20);\n  }\n}\n\nreturn {\n  json: {\n    ...j,\n    sha256: sha,\n    original_filename: fileName,\n    mime_type: mimeType,\n    bytes: buffer.length,\n    width,\n    height,\n  },\n  binary: item.binary,\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -272
+      ],
+      "id": "49226b68-034e-49a9-9a5b-37db45b861e8",
+      "name": "SHA-256 + Metadados"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst item = $input.first();\nconst origem = $('Start Storage').first();\n\n// A SP retorna os dados como array dentro do JSON.\nconst dados = item.json;\nconst reserva = Array.isArray(dados)\n  ? dados[0]\n  : Array.isArray(dados?.[0])\n    ? dados[0][0]\n    : dados;\n\nif (!reserva || typeof reserva !== 'object') {\n  throw new Error(\n    'Não foi possível localizar o objeto da reserva na saída da SP.'\n  );\n}\n\nconst reservaOk =\n  reserva.reserva_ok === 1 ||\n  reserva.reserva_ok === '1' ||\n  reserva.reserva_ok === true;\n\nif (!reservaOk) {\n  throw new Error(\n    `Reserva não autorizada: ${reserva.motivo || 'motivo não informado'}`\n  );\n}\n\nif (!origem.binary?.data) {\n  throw new Error(\n    'Arquivo binário original não encontrado em Start Storage.'\n  );\n}\n\nreturn [\n  {\n    json: {\n      ...reserva,\n      'ind-api-folder': origem.json['ind-api-folder'],\n      storage_folder: origem.json['ind-api-folder'],\n    },\n    binary: origem.binary,\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        -256
+      ],
+      "id": "b393e507-d320-4d3a-a3e4-7c90593a2060",
+      "name": "Normaliza"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const apiKey = String($json.dsc_api_key ?? '').trim();\nconst apiSecret = String($json.dsc_api_secret ?? '').trim();\nconst folder = String($json.storage_folder ?? '')\n  .trim()\n  .replace(/^\\/+|\\/+$/g, '');\n\nconst baseUrl = String($json.public_base_url ?? '').trim();\nconst cloudMatch = baseUrl.match(\n  /^https:\\/\\/res\\.cloudinary\\.com\\/([^/?#]+)(?:\\/|$)/\n);\n\nif (!apiKey || !apiSecret) {\n  throw new Error('Credenciais Cloudinary ausentes.');\n}\n\nif (!cloudMatch) {\n  throw new Error('Cloud name não identificado em public_base_url.');\n}\n\nif (!folder || !/^[a-f0-9]{64}$/i.test(String($json.sha256 ?? ''))) {\n  throw new Error('Pasta ou SHA-256 inválido.');\n}\n\nif (!$binary?.data) {\n  throw new Error('Binário data ausente.');\n}\n\nreturn {\n  json: {\n    ...$json,\n    storage_folder: folder,\n    cloudinary_cloud: cloudMatch[1],\n    cloudinary_public_id: `${folder}/${$json.sha256}`,\n    AUTHORIZATION:\n      `Basic ${Buffer.from(`${apiKey}:${apiSecret}`, 'utf8').toString('base64')}`,\n  },\n  binary: $binary,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        -32
+      ],
+      "id": "e32377e9-6dff-452b-9c86-34ee254e5e76",
+      "name": "Prepara Cloudinary"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Upload externo falhou; reserva finalizada. Consulte o node de upload."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        384,
+        320
+      ],
+      "id": "ffccd5ff-87a2-4c60-a185-ddd67e5cd829",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida a primeira linha retornada pela SP.\nconst dados = $input.first().json;\n\nconst finalizacao = Array.isArray(dados)\n  ? Array.isArray(dados[0])\n    ? dados[0][0]\n    : dados[0]\n  : dados;\n\nif (Number(finalizacao?.finalizacao_ok) !== 1) {\n  throw new Error(\n    `Finalização não confirmada: ${\n      finalizacao?.motivo || 'retorno inválido da SP'\n    }`\n  );\n}\n\n// Recupera o contexto da execução corrente.\nconst contexto = $('SHA-256 + Metadados').itemMatching(0).json;\n\n// R2 e B2 compartilham driver; a seleção é por provider.\nconst nodesUpload = {\n  cloudinary: 'Upload Cloudinary - Proxy',\n  cloudflare_r2: 'Upload S3R2 - Proxy',\n  backblaze_b2: 'Upload S3B2 - Proxy',\n};\n\nconst nomeUpload = nodesUpload[contexto.provider];\n\nif (!nomeUpload) {\n  throw new Error(\n    `Provider não suportado: ${contexto.provider}`\n  );\n}\n\nif (\n  Number(finalizacao.storage_id) !==\n  Number(contexto.storage_id)\n) {\n  throw new Error(\n    'Finalização não corresponde ao storage da execução.'\n  );\n}\n\n// Recupera a resposta do upload.\nconst resposta = $(nomeUpload).itemMatching(0).json;\nlet upload = resposta.body ?? resposta;\n\n// Algumas configurações HTTP retornam o body como texto.\nif (typeof upload === 'string') {\n  try {\n    upload = JSON.parse(upload);\n  } catch {\n    throw new Error('Resposta do upload não contém JSON válido.');\n  }\n}\n\nif (\n  !upload ||\n  typeof upload !== 'object' ||\n  Array.isArray(upload)\n) {\n  throw new Error('Resposta do upload não contém um objeto de mídia.');\n}\n\nif (\n  upload.provider &&\n  upload.provider !== contexto.provider\n) {\n  throw new Error('Provider do upload não corresponde à reserva.');\n}\n\nif (\n  upload.sha256 &&\n  upload.sha256 !== contexto.sha256\n) {\n  throw new Error(\n    'SHA-256 do upload não corresponde ao arquivo enviado.'\n  );\n}\n\n// Valida os metadados.\nconst secureUrl = upload.secure_url;\nconst width = Number(upload.width);\nconst height = Number(upload.height);\nconst bytes = Number(upload.bytes ?? contexto.bytes);\n\n// Não utiliza a classe URL, indisponível no sandbox desta instância.\nlet urlValida = false;\n\nif (typeof secureUrl === 'string') {\n  const match = secureUrl.match(\n    /^https:\\/\\/([a-z0-9.-]+)(?::([0-9]{1,5}))?(\\/[^\\s\\\\]*)?$/i\n  );\n\n  if (match) {\n    const host = match[1];\n    const porta = match[2];\n\n    const hostValido =\n      host.length <= 253 &&\n      host.includes('.') &&\n      host.split('.').every(\n        parte =>\n          parte.length >= 1 &&\n          parte.length <= 63 &&\n          /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(parte)\n      );\n\n    urlValida =\n      hostValido &&\n      (\n        !porta ||\n        (Number(porta) >= 1 && Number(porta) <= 65535)\n      );\n  }\n}\n\nconst widthValido = Number.isInteger(width) && width > 0;\nconst heightValido = Number.isInteger(height) && height > 0;\nconst bytesValidos = Number.isInteger(bytes) && bytes > 0;\n\nif (\n  !urlValida ||\n  !widthValido ||\n  !heightValido ||\n  !bytesValidos\n) {\n  throw new Error(\n    'Resposta de upload inválida: ' +\n    JSON.stringify({\n      provider: contexto.provider,\n      storage_id: contexto.storage_id,\n      nodeUpload: nomeUpload,\n      urlValida,\n      widthValido,\n      heightValido,\n      bytesValidos,\n    })\n  );\n}\n\nif (!/^[a-f0-9]{64}$/i.test(String(contexto.sha256 ?? ''))) {\n  throw new Error('SHA-256 do contexto ausente ou inválido.');\n}\n\n// Preserva IDs reais; permite fallback para providers de objetos.\nconst providerObjeto = [\n  'cloudflare_r2',\n  'backblaze_b2',\n].includes(contexto.provider);\n\nconst publicId = upload.public_id ??\n  (\n    providerObjeto && contexto.storage_folder\n      ? `${contexto.storage_folder}/${contexto.sha256}`\n      : null\n  );\n\nconst assetId = upload.asset_id ??\n  (providerObjeto ? upload.object_key : null);\n\nif (!publicId || !assetId) {\n  throw new Error(\n    'Resposta de upload sem identificadores da mídia.'\n  );\n}\n\nconst mimeType = upload.mime_type ?? contexto.mime_type;\n\nif (!['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {\n  throw new Error('MIME da mídia ausente ou não suportado.');\n}\n\n// Retorna somente os insumos de mídia para o fluxo pai.\n// Não transporta credenciais, autorização ou token da reserva.\nreturn [\n  {\n    json: {\n      provider: contexto.provider,\n      sha256: contexto.sha256,\n      asset_id: assetId,\n      public_id: publicId,\n      secure_url: secureUrl,\n      url: secureUrl,\n      width,\n      height,\n      mime_type: mimeType,\n      original_filename: String(\n        contexto.original_filename ?? ''\n      ).trim(),\n      bytes,\n      existing: upload.existing === true,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        112
+      ],
+      "id": "04a04d55-5de8-41b5-b36a-e795d1362d42",
+      "name": "Valida Finalização Sucesso",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CALL SP_Core_Storage_Finaliza($1, $2, $3, $4, $5);",
+        "options": {
+          "queryReplacement": "={{ [\n  $('SHA-256 + Metadados').item.json.storage_id,\n  $('SHA-256 + Metadados').item.json.reservation_token,\n  1,\n  'Sucesso',\n  0\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        112
+      ],
+      "id": "6500ef30-9390-44a9-bb72-ce15710bcef2",
+      "name": "Finaliza Sucesso",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CALL SP_Core_Storage_Finaliza($1, $2, $3, $4, $5);",
+        "options": {
+          "queryReplacement": "={{ [\n  $('SHA-256 + Metadados').item.json.storage_id,\n  $('SHA-256 + Metadados').item.json.reservation_token,\n  0,\n  'Falha no upload; verificar erro HTTP',\n  0\n] }}"
+        }
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        320
+      ],
+      "id": "dd7d95af-dde0-47ae-92e8-ecd9e334fb98",
+      "name": "Finaliza Falha",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const dados = $input.first().json;\n\nconst resultado = Array.isArray(dados)\n  ? Array.isArray(dados[0])\n    ? dados[0][0]\n    : dados[0]\n  : dados;\n\nif (Number(resultado?.finalizacao_ok) !== 1) {\n  throw new Error(\n    `Finalização não confirmada: ${\n      resultado?.motivo || 'retorno inválido da SP'\n    }`\n  );\n}\n\nreturn [{\n  json: resultado,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        320
+      ],
+      "id": "96fe2779-4cfb-439c-b6b9-fb17efa3441b",
+      "name": "Valida Finalização Falha"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.endpoint_url.replace(/\\/+$/, '') + '/image/upload' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ $json.AUTHORIZATION }}"
+            },
+            {
+              "name": "X-Cloudinary-Cloud",
+              "value": "={{ $json.cloudinary_cloud }}"
+            },
+            {
+              "name": "X-Proxy-Key",
+              "value": "RECONFIGURE_IN_N8N_SECRET"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "public_id",
+              "value": "={{ $json.cloudinary_public_id }}"
+            },
+            {
+              "name": "overwrite",
+              "value": "false"
+            },
+            {
+              "name": "use_filename",
+              "value": "false"
+            },
+            {
+              "name": "unique_filename",
+              "value": "false"
+            },
+            {
+              "name": "asset_folder",
+              "value": "={{ $json.storage_folder }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        -32
+      ],
+      "id": "d1ea75db-f2f5-4fec-a899-8c6560862bdc",
+      "name": "Upload Cloudinary - Proxy",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.endpoint_url.replace(/\\/+$/, '') + '/upload' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Proxy-Key",
+              "value": "RECONFIGURE_IN_N8N_SECRET"
+            },
+            {
+              "name": "x-storage-folder",
+              "value": "={{ $json.storage_folder }}"
+            },
+            {
+              "name": "x-media-sha256",
+              "value": "={{ $json.sha256 }}"
+            },
+            {
+              "name": "x-file-extension",
+              "value": "={{ $json.mime_type === 'image/jpeg' ? 'jpg' : $json.mime_type === 'image/png' ? 'png' : $json.mime_type === 'image/webp' ? 'webp' : '' }}"
+            },
+            {
+              "name": "x-original-filename",
+              "value": "={{ $json.original_filename }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $json.mime_type }}"
+            },
+            {
+              "name": "x-media-width",
+              "value": "={{ $json.width }}"
+            },
+            {
+              "name": "x-media-height",
+              "value": "={{ $json.height }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        128
+      ],
+      "id": "4e422655-b9e4-47ef-9124-558c3e5131e6",
+      "name": "Upload S3R2 - Proxy",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "cloudinary",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "98c70c98-2ac6-4644-8de8-bc06dcd1e9eb"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "CDY"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e08524e2-b54f-4cd1-9b8f-1d305ce8dbea",
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "cloudflare_r2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "S3"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ca7eb891-1f4f-4347-92a4-0d5305d83f74",
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "backblaze_b2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "B2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -992,
+        112
+      ],
+      "id": "ec526c4b-5943-438d-8137-2472e662346e",
+      "name": "SWITCH | Storage Provider"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.endpoint_url.replace(/\\/+$/, '') + '/upload' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Proxy-Key",
+              "value": "RECONFIGURE_IN_N8N_SECRET"
+            },
+            {
+              "name": "x-storage-folder",
+              "value": "={{ $json.storage_folder }}"
+            },
+            {
+              "name": "x-media-sha256",
+              "value": "={{ $json.sha256 }}"
+            },
+            {
+              "name": "x-file-extension",
+              "value": "={{ $json.mime_type === 'image/jpeg' ? 'jpg' : $json.mime_type === 'image/png' ? 'png' : $json.mime_type === 'image/webp' ? 'webp' : '' }}"
+            },
+            {
+              "name": "x-original-filename",
+              "value": "={{ $json.original_filename }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "={{ $json.mime_type }}"
+            },
+            {
+              "name": "x-media-width",
+              "value": "={{ $json.width }}"
+            },
+            {
+              "name": "x-media-height",
+              "value": "={{ $json.height }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        304
+      ],
+      "id": "78a0d0b0-aefe-4061-9082-43024934bc1a",
+      "name": "Upload S3B2 - Proxy",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "Start Storage": {
+      "main": [
+        [
+          {
+            "node": "SP - Storage Provider Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SP - Storage Provider Reserva": {
+      "main": [
+        [
+          {
+            "node": "Normaliza",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF | Reserva OK?": {
+      "main": [
+        [
+          {
+            "node": "SHA-256 + Metadados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SHA-256 + Metadados": {
+      "main": [
+        [
+          {
+            "node": "SWITCH | Storage Provider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliza": {
+      "main": [
+        [
+          {
+            "node": "IF | Reserva OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Upload Cloudinary - Proxy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finaliza Sucesso": {
+      "main": [
+        [
+          {
+            "node": "Valida Finalização Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finaliza Falha": {
+      "main": [
+        [
+          {
+            "node": "Valida Finalização Falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valida Finalização Falha": {
+      "main": [
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Cloudinary - Proxy": {
+      "main": [
+        [
+          {
+            "node": "Finaliza Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finaliza Falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload S3R2 - Proxy": {
+      "main": [
+        [
+          {
+            "node": "Finaliza Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finaliza Falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SWITCH | Storage Provider": {
+      "main": [
+        [
+          {
+            "node": "Prepara Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload S3R2 - Proxy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upload S3B2 - Proxy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload S3B2 - Proxy": {
+      "main": [
+        [
+          {
+            "node": "Finaliza Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finaliza Falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": []
+}

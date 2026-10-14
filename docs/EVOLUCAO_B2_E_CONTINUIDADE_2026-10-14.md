@@ -154,4 +154,4 @@ Node Contexto da Tentativa foi apenas proposto; sua inclusão e o laço não for
 - Migração histórica dos DATETIME e concorrência/TTL.
 - Registro/auditoria de tentativas separado do estado operacional, se necessário.
 - Persistência de secrets nas execuções n8n e rotação de secrets Cloudinary expostas no chat: recomendadas, sem confirmação de execução. Nenhum valor reproduzido no repositório.
-- Capturar exports sanitizados n8n e definições finais SQL para versionar artefatos executáveis. Não existe acesso direto às aplicações pelo agente nesta consolidação.
+- O snapshot sanitizado `workflows/n8n/storage-media-external/SUB_Storage_Media_External.json` foi capturado e versionado; referências MySQL foram removidas, o workflow foi desativado e os três `X-Proxy-Key` foram substituídos por placeholders. Ainda falta reimportá-lo em ambiente de homologação, reconfigurar credenciais/segredos e validar nós e conexões após a sanitização. Definições finais SQL continuam pendentes de versionamento. O snapshot não equivale à ativação em produção.

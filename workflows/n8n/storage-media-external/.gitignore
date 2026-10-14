@@ -1,0 +1,7 @@
+.env
+.env.*
+!.env.example
+*.private.json
+*.secrets.json
+execution-data/
+credentials/
