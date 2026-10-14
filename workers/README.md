@@ -22,6 +22,8 @@ Hash é recalculado pelo Worker. Dimensões são fornecidas pelo n8n e validadas
 
 Deduplicação HEAD antes de PUT; chamadas simultâneas da mesma chave ainda podem criar versões adicionais no B2. Cache público de arquivos por hash: um ano, immutable. Só imagens nos caminhos permitidos são expostas; não há listagem pública do bucket.
 
-Validação local realizada: sintaxe e simulações de autenticação inválida, rejeição de hash, upload, deduplicação sequencial e entrega pública. Não houve deployment nem chamadas autenticadas reais ao B2 pelo agente. Homologação real de upload, leitura privada via proxy, repetição e WordPress permanece pendente.
+Validação local realizada: sintaxe e simulações de autenticação inválida, rejeição de hash, upload, deduplicação sequencial e entrega pública. O agente não implantou diretamente; o usuário confirmou deployment e uploads reais nos Workers B2-01 e B2-02. Deduplicação demonstrada em ambos; leitura pública e publicação WordPress confirmadas para B2-02. Detalhes e limites no [registro atualizado](../docs/EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md).
+
+B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.workers.dev`, bucket `core360-02-storage-b2-hml` e secrets independentes. Não substituir a configuração de B2-01 ao criar nova conta.
 
 Custos não são garantidamente zero: monitorar quotas B2 e Workers. Cache reduz acessos, mas não elimina misses nem operações de upload.

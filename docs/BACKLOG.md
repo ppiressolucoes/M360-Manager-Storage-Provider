@@ -2,7 +2,7 @@
 
 ## B2 — terceiro provider de imagens
 
-Status: implantação autorizada em 13/10/2026; preparação iniciada. Conta, bucket, proxy e upload ainda não confirmados.
+Status em 14/10/2026: B2-01 e B2-02 cadastrados (IDs 12 e 13); Workers implantados pelo usuário. Upload e deduplicação demonstrados em ambos; entrega pública e publicação integrada confirmadas para B2-02. Ver [estado atual e continuidade](EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md).
 
 Objetivo: incluir `backblaze_b2` como terceiro provider, com primeiro storage `B2-01`, mantendo o rodízio global, a reserva/finalização e o contrato de mídia usado pelo WordPress.
 
@@ -10,7 +10,7 @@ Objetivo: incluir `backblaze_b2` como terceiro provider, com primeiro storage `B
 
 Seguir com proxy de upload B2 com contrato equivalente ao adapter R2. As credenciais B2 ficam no proxy, não no retorno da SP nem no fluxo pai. B2 não possui o binding R2 `MEDIA_BUCKET`: o proxy precisa implementar acesso autenticado ao B2, por exemplo pela API S3-compatible com assinatura apropriada.
 
-Compatibilidade de contrato não está implementada ou homologada. O driver `s3_compatible` atual representa um ramo de proxy HTTP, não um cliente S3 genérico do n8n. Não ativar B2 presumindo que o Worker R2 existente fará seu upload.
+Compatibilidade de contrato foi demonstrada com proxy próprio B2; n8n utiliza ramo por provider. O driver `s3_compatible` representa proxy HTTP, não cliente S3 genérico do n8n. Worker R2 não atende B2 por binding.
 
 ### Etapas
 
@@ -36,6 +36,8 @@ Compatibilidade de contrato não está implementada ou homologada. O driver `s3_
 ## Pendências transversais
 
 - Retry de até três tentativas aprovado, ainda sem implantação/homologação confirmada.
+- Próxima tarefa após a pausa: classificar falhas, finalizar reserva e tentar novo storage com contexto preservado.
+- B2-01 pendente de confirmação de publicação integrada; B2-02 concluído no caminho de sucesso.
 - R2-02 pendente no novo workflow.
 - Datas históricas UTC/UTC−3 pendentes de alinhamento.
 - Concorrência, TTL e persistência de secrets em execuções n8n pendentes de revisão.
