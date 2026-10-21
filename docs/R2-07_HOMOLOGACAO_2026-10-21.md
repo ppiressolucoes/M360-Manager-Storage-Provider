@@ -12,6 +12,10 @@ Health retornou status ok, proxy flow-r2-storage-proxy-07, versão 1.0.0, provid
 
 Primeiro upload demonstrado: success=true, existing=false, JPEG 840×560, 137380 bytes, pasta pel/featured; secure_url do host previsto. Nenhuma credencial ou token de reserva incluído neste registro.
 
-Pendentes: leitura pública sem autenticação; repetição do mesmo arquivo com existing=true; cadastro SQL inicialmente inativo e identificação do storage_id; ativação e release integrado até registro/vínculo WP/publicação. Não presumir ID 18 nem afirmar inclusão efetiva no banco.
+Leitura pública confirmada pelo usuário. Repetição retornou existing=true, mantendo hash, URL, dimensões e tamanho. Testes isolados de upload, leitura e deduplicação concluídos.
+
+SQL de cadastro inativo preparado em database/mysql/inventory/register_R2-07.sql, ainda não executado pelo agente nem confirmado pelo usuário. E-mail da conta pode ser preenchido somente no banco operacional; não é necessário ao adapter.
+
+Pendentes: cadastro SQL inicialmente inativo e identificação do storage_id; ativação e release integrado até registro/vínculo WP/publicação. Não presumir ID 18 nem afirmar inclusão efetiva no banco.
 
 Manter pattern *.r2.dev no Registry onde efetivamente salvo, endpoint dinâmico no HTTP R2 e reserva global com provider NULL. Não criar outro provider lógico/adapter por conta.
