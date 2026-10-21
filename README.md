@@ -11,6 +11,8 @@ Repositório dedicado à gestão de storage externo de mídia: contrato WordPres
 
 ## Documentação
 
+- **[Estado atual e inventário — 20/10/2026](docs/INVENTARIO_E_CONTINUIDADE_2026-10-20.md)**
+- **[Artefatos das sprints: JSON, Code nodes e SQL](docs/ARTEFATOS_DAS_SPRINTS.md)**
 - [Contexto inicial e decisões de arquitetura](docs/CORE_STORAGE_MEDIA_EXTERNAL_CONTEXT_2026-10-13.md)
 - [Implementação, banco de dados e homologação dos fluxos](docs/HOMOLOGACAO_STORAGE_PROVIDER_2026-10-13.md)
 - [Esteira de implantação e backlog](docs/BACKLOG.md)
@@ -19,3 +21,7 @@ Repositório dedicado à gestão de storage externo de mídia: contrato WordPres
 ## Segurança
 
 Não versionar credenciais, application passwords, chaves de API/Worker, tokens, dados de execução do n8n ou dumps de banco com segredos. Use referências lógicas e exemplos sanitizados.
+
+## Colaboração
+
+Consultar backlog e estado atual antes de retomar. Atualizar decisões, evidências e artefatos sanitizados ao concluir ações e sincronizar o GitHub oficial. Regras em [AGENTS.md](AGENTS.md). SQL reconstruído não substitui export da produção; testes relatados não equivalem a auditoria independente.

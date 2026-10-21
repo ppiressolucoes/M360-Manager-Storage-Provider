@@ -1,45 +1,38 @@
-# Esteira do Core Manager Provider
+# Backlog compartilhado — Core Manager Storage Provider
 
-## B2 — terceiro provider de imagens
+Atualizado em 20/10/2026, Brasília. Referência: [inventário atual](INVENTARIO_E_CONTINUIDADE_2026-10-20.md).
 
-Status em 14/10/2026: B2-01 e B2-02 cadastrados (IDs 12 e 13); Workers implantados pelo usuário. Upload e deduplicação demonstrados em ambos; entrega pública e publicação integrada confirmadas para B2-02. Ver [estado atual e continuidade](EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md).
+| Iniciativa | Estado | Próxima ação |
+| --- | --- | --- |
+| Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
+| R2-01 | Publicação confirmada | Monitorar |
+| R2-02 | Novo fluxo integral não confirmado | Obter evidência de release |
+| B2-01 (12) | Upload/deduplicação e reserva demonstrados | Confirmar execução completa após correções |
+| B2-02 (13) | Publicação confirmada | Monitorar |
+| R2-03 (14) | Publicação confirmada | Monitorar |
+| R2-04 (15) | Publicação confirmada | Monitorar |
+| R2-05 (16) | Testes isolados e cadastro inativo confirmados | Confirmar ativação e publicação integrada |
+| R2-06 (17) | Testes isolados e cadastro inativo confirmados | Confirmar ativação e publicação integrada |
+| Retry de até três tentativas | Aprovado, não implantado/homologado | Retomar na primeira falha real, conforme decisão vigente |
+| Monitoramento R2/B2 | Objetivo aprovado, não implantado | Definir APIs, acesso de leitura, modelo e canal de alerta |
+| OCI | Apenas sugestão | Reavaliar somente se priorizado |
 
-Objetivo: incluir `backblaze_b2` como terceiro provider, com primeiro storage `B2-01`, mantendo o rodízio global, a reserva/finalização e o contrato de mídia usado pelo WordPress.
+## Próxima retomada de falha
 
-### Decisão de integração
+Classificar erro sanitizado; finalizar e validar reserva antes de nova; preservar binário/contexto e limitar tentativas. Bloqueio 0 não impede repetição da conta; timeout pode ter escrito objeto. Falha de finalização e tentativas esgotadas encerram com erro. Não afirmar que laço ou Contexto da Tentativa já existem.
 
-Seguir com proxy de upload B2 com contrato equivalente ao adapter R2. As credenciais B2 ficam no proxy, não no retorno da SP nem no fluxo pai. B2 não possui o binding R2 `MEDIA_BUCKET`: o proxy precisa implementar acesso autenticado ao B2, por exemplo pela API S3-compatible com assinatura apropriada.
+## Monitoramento
 
-Compatibilidade de contrato foi demonstrada com proxy próprio B2; n8n utiliza ramo por provider. O driver `s3_compatible` representa proxy HTTP, não cliente S3 genérico do n8n. Worker R2 não atende B2 por binding.
+Coletar por conta/bucket sem duplicar franquias; tratar última leitura válida e SEM_LEITURA; limites por unidade/período configuráveis; definir canal, mudança de nível e recuperação. Não bloquear automaticamente pool na primeira versão proposta. Export Cloudinary arquivado não contém node de notificação.
 
-### Etapas
+## Pendências transversais e artefatos
 
-1. Confirmar conta B2, criar/identificar bucket de homologação, região e endpoint S3; definir URL HTTPS de entrega acessível pelo WordPress.
-2. Preparar Application Key com acesso restrito ao bucket e operações necessárias. Guardar valores como secrets do proxy; não registrar valores no Git ou chat.
-3. Preparar proxy B2: autenticação n8n→proxy, GET /health e POST /upload binário. Aceitar pasta, SHA-256, extensão, nome, MIME e dimensões conforme contrato R2. Não pressupor reutilização da chave padrão: confirmar sua configuração no novo proxy.
-4. Implementar object key determinística, deduplicação e retorno uniforme: provider, sha256, asset_id, public_id, secure_url, url, width, height, mime_type, original_filename, bytes, existing. Não fabricar ID Cloudinary nem truncar hash.
-5. Cadastrar B2-01 inativo em Core_Storage_Provider: provider backblaze_b2, driver s3_compatible somente se o contrato do proxy for compatível, endpoint_url do proxy, bucket_name, region_name e public_base_url. credential_ref pode ser NULL se as credenciais forem resolvidas exclusivamente no proxy.
-6. Revisar o ramo S3/R2 e o node de fronteira para suportar B2 explicitamente, incluindo identificadores e autenticação. Manter adapters no mesmo workflow.
-7. Cadastrar backblaze_b2 no Registry WordPress, delivery_mode passthrough e hosts HTTPS efetivos de entrega.
-8. Homologar upload e repetição do mesmo arquivo, finalização e registro/associação WP. Validar erro, URL pública e isolamento das credenciais.
-9. Ativar B2-01 no pool após preparação; manter CALL SP_Core_Storage_Reserva(NULL, 3) e CLOUDINARY-07 inativo. Validar seleção pelo rodízio e regressão dos providers existentes.
-
-### Critérios de conclusão
-
-- Upload e deduplicação B2 observados, não apenas health.
-- Conta selecionada corresponde ao endpoint/bucket utilizados.
-- Finalização aceita o token corrente e libera a reserva.
-- Retorno ao pai contém somente dados de mídia válidos.
-- WordPress registra, associa e entrega imagem pública HTTPS.
-- Erros não deixam reserva órfã; retry limitado segue a implementação efetivamente validada.
-
-## Pendências transversais
-
-- Retry de até três tentativas aprovado, ainda sem implantação/homologação confirmada.
-- Próxima tarefa após a pausa: classificar falhas, finalizar reserva e tentar novo storage com contexto preservado.
-- B2-01 pendente de confirmação de publicação integrada; B2-02 concluído no caminho de sucesso.
-- R2-02 pendente no novo workflow.
-- Datas históricas UTC/UTC−3 pendentes de alinhamento.
-- Concorrência, TTL e persistência de secrets em execuções n8n pendentes de revisão.
-
-Referência: [implementação e homologação](HOMOLOGACAO_STORAGE_PROVIDER_2026-10-13.md).
+- Confrontar SQL reconstruído com SHOW CREATE PROCEDURE do runtime; sem aplicar automaticamente.
+- Obter export operacional sanitizado atual do storage e código completo R2; baseline existente não foi reimportado após sanitização.
+- Validar concorrência, TTL e datas históricas UTC/UTC−3 antes de migração.
+- Revisar erros anteriores ao HTTP, pool vazio e driver desconhecido para evitar reserva órfã.
+- Avaliar histórico separado de reservas; tabela atual mantém estado operacional.
+- Revisar retenção de execuções e rotação recomendada de secrets expostas; não confirmada.
+- Investigar permissão/redirecionamento pós-save no Registry; cadastro persistiu, causa não confirmada.
+- Planejar entrega R2 adequada ao tráfego de produção e compatibilidade das URLs antigas.
+- Manter JSON/Code nodes/SQL por fluxo e sprint conforme [catálogo](ARTEFATOS_DAS_SPRINTS.md); sincronizar GitHub ao concluir ações, sem secrets.

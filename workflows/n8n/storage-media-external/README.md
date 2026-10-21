@@ -19,6 +19,8 @@ O desenho registrado usa um único workflow e ramificações internas por provid
 
 ## Snapshot versionado
 
+Códigos completos dos Code nodes estão em `nodes/`, extraídos do mesmo baseline; `nodes/index.json` informa nomes, modos e hashes. Expansão posterior R2-03/R2-04 publicada e R2-05/R2-06 pendente de confirmação integrada está no [estado atual](../../../docs/INVENTARIO_E_CONTINUIDADE_2026-10-20.md). Nenhum novo export operacional foi recebido para esses cadastros, que usam endpoint dinâmico. Retry aguarda primeira falha real conforme decisão vigente.
+
 Manter aqui o snapshot público com nome estável:
 
 ```text

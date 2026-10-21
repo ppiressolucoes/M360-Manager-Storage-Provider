@@ -1,0 +1,440 @@
+{
+  "name": "CORE | Cloudinary Gestão de Contas",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 15 0,6,12,18 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -960,
+        -240
+      ],
+      "id": "a954836c-2ec1-434b-835e-e1f3bcea9a2c",
+      "name": "START"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json;\n\nconst body =\n  r.body && typeof r.body === 'object'\n    ? r.body\n    : {};\n\nconst credits = body.credits ?? {};\nconst transformations = body.transformations ?? {};\nconst bandwidth = body.bandwidth ?? {};\nconst storage = body.storage ?? {};\n\nreturn [{\n  json: {\n    api_id: Number(r.api_id),\n\n    cloud_name:\n      r.cloud_name ?? null,\n\n    account_email:\n      r.account_email ?? null,\n\n    plan:\n      body.plan ?? null,\n\n    last_updated:\n      body.last_updated ?? null,\n\n    date_requested:\n      body.date_requested ?? null,\n\n    credit_used:\n      Number(credits.usage ?? 0),\n\n    credit_limit:\n      Number(credits.limit ?? 0),\n\n    credit_percent:\n      Number(credits.used_percent ?? 0),\n\n    transformation_usage:\n      Number(transformations.usage ?? 0),\n\n    transformation_credits:\n      Number(transformations.credits_usage ?? 0),\n\n    bandwidth_bytes:\n      Number(bandwidth.usage ?? 0),\n\n    bandwidth_credits:\n      Number(bandwidth.credits_usage ?? 0),\n\n    storage_bytes:\n      Number(storage.usage ?? 0),\n\n    storage_credits:\n      Number(storage.credits_usage ?? 0),\n\n    resources:\n      Number(body.resources ?? 0),\n\n    derived_resources:\n      Number(body.derived_resources ?? 0),\n\n    objects:\n      Number(body.objects?.usage ?? 0),\n\n    requests:\n      Number(body.requests ?? 0),\n\n    impressions:\n      Number(body.impressions?.usage ?? 0),\n\n    admin_rate_limit:\n      Number(\n        r.headers?.['x-featureratelimit-limit'] ?? 0\n      ),\n\n    admin_rate_remaining:\n      Number(\n        r.headers?.['x-featureratelimit-remaining'] ?? 0\n      ),\n\n    http_status:\n      Number(r.statusCode ?? 0),\n\n    raw_usage:\n      body\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -208
+      ],
+      "id": "fcc41852-3958-49f0-bbf6-784e6c71b58d",
+      "name": "Normaliza | Usage Cloudinary"
+    },
+    {
+      "parameters": {
+        "jsCode": "const itens = $input.all();\n\nreturn itens.map(item => {\n  const x = item.json;\n\n  const percentual = Number(x.credit_percent ?? 0);\n  const usados = Number(x.credit_used ?? 0);\n  const limite = Number(x.credit_limit ?? 0);\n\n  let status = 'NORMAL';\n  let permitePublicacao = true;\n  let permiteMigracao = true;\n  let prioridade = 1;\n\n  if (percentual >= 95) {\n    status = 'BLOQUEADA';\n    permitePublicacao = false;\n    permiteMigracao = false;\n    prioridade = 5;\n\n  } else if (percentual >= 90) {\n    status = 'CRITICA';\n    permitePublicacao = true;\n    permiteMigracao = false;\n    prioridade = 4;\n\n  } else if (percentual >= 85) {\n    status = 'RESTRITA';\n    permitePublicacao = true;\n    permiteMigracao = false;\n    prioridade = 3;\n\n  } else if (percentual >= 70) {\n    status = 'ATENCAO';\n    permitePublicacao = true;\n    permiteMigracao = true;\n    prioridade = 2;\n  }\n\n  const creditoDisponivel = Math.max(\n    limite - usados,\n    0\n  );\n\n  return {\n    json: {\n      ...x,\n\n      credit_available:\n        Number(creditoDisponivel.toFixed(4)),\n\n      status_operacional:\n        status,\n\n      permite_publicacao:\n        permitePublicacao ? 1 : 0,\n\n      permite_migracao:\n        permiteMigracao ? 1 : 0,\n\n      prioridade_operacional:\n        prioridade\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -208
+      ],
+      "id": "d4a514c6-bf10-415c-95a7-5674846c870f",
+      "name": "Classifica | Capacidade Cloudinary"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO Cloudinary_Usage (\n    api_id,\n    cloud_name,\n    account_email,\n    plan,\n\n    credit_used,\n    credit_limit,\n    credit_percent,\n    credit_available,\n\n    transformation_usage,\n    transformation_credits,\n\n    bandwidth_bytes,\n    bandwidth_credits,\n\n    storage_bytes,\n    storage_credits,\n\n    resources,\n    derived_resources,\n    objects,\n    requests,\n    impressions,\n\n    status_operacional,\n    permite_publicacao,\n    permite_migracao,\n    prioridade_operacional,\n\n    cloudinary_last_updated,\n    date_requested_utc,\n\n    admin_rate_limit,\n    admin_rate_remaining,\n    http_status,\n\n    checked_at,\n    raw_usage\n)\nVALUES (\n    {{ $json.api_id }},\n    '{{ $json.cloud_name }}',\n    '{{ $json.account_email ?? \"\" }}',\n    '{{ $json.plan ?? \"\" }}',\n\n    {{ $json.credit_used }},\n    {{ $json.credit_limit }},\n    {{ $json.credit_percent }},\n    {{ $json.credit_available }},\n\n    {{ $json.transformation_usage }},\n    {{ $json.transformation_credits }},\n\n    {{ $json.bandwidth_bytes }},\n    {{ $json.bandwidth_credits }},\n\n    {{ $json.storage_bytes }},\n    {{ $json.storage_credits }},\n\n    {{ $json.resources }},\n    {{ $json.derived_resources }},\n    {{ $json.objects }},\n    {{ $json.requests }},\n    {{ $json.impressions }},\n\n    '{{ $json.status_operacional }}',\n    {{ $json.permite_publicacao }},\n    {{ $json.permite_migracao }},\n    {{ $json.prioridade_operacional }},\n\n    {{ $json.last_updated ? \"'\" + $json.last_updated + \"'\" : \"NULL\" }},\n\n    {{\n      $json.date_requested\n        ? \"'\" + $json.date_requested\n            .replace(\"T\", \" \")\n            .replace(\"Z\", \"\") + \"'\"\n        : \"NULL\"\n    }},\n\n    {{ $json.admin_rate_limit }},\n    {{ $json.admin_rate_remaining }},\n    {{ $json.http_status }},\n\n    NOW(),\n\n    '{{ JSON.stringify($json.raw_usage).replace(/'/g, \"''\") }}'\n)\n\nON DUPLICATE KEY UPDATE\n\n    cloud_name = VALUES(cloud_name),\n    account_email = VALUES(account_email),\n    plan = VALUES(plan),\n\n    credit_used = VALUES(credit_used),\n    credit_limit = VALUES(credit_limit),\n    credit_percent = VALUES(credit_percent),\n    credit_available = VALUES(credit_available),\n\n    transformation_usage = VALUES(transformation_usage),\n    transformation_credits = VALUES(transformation_credits),\n\n    bandwidth_bytes = VALUES(bandwidth_bytes),\n    bandwidth_credits = VALUES(bandwidth_credits),\n\n    storage_bytes = VALUES(storage_bytes),\n    storage_credits = VALUES(storage_credits),\n\n    resources = VALUES(resources),\n    derived_resources = VALUES(derived_resources),\n    objects = VALUES(objects),\n    requests = VALUES(requests),\n    impressions = VALUES(impressions),\n\n    status_operacional = VALUES(status_operacional),\n    permite_publicacao = VALUES(permite_publicacao),\n    permite_migracao = VALUES(permite_migracao),\n    prioridade_operacional = VALUES(prioridade_operacional),\n\n    cloudinary_last_updated = VALUES(cloudinary_last_updated),\n    date_requested_utc = VALUES(date_requested_utc),\n\n    admin_rate_limit = VALUES(admin_rate_limit),\n    admin_rate_remaining = VALUES(admin_rate_remaining),\n    http_status = VALUES(http_status),\n\n    checked_at = NOW(),\n    raw_usage = VALUES(raw_usage);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        944,
+        -208
+      ],
+      "id": "4f2e7fea-f0f7-4db1-b454-63025a55b8f3",
+      "name": "MySQL | Atualiza Usage Cloudinary"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n    c.id AS api_id,\n    c.dsc_email_cad AS account_email,\n    c.dsc_api_key AS api_key,\n    c.dsc_api_secret AS api_secret,\n    c.dsc_url_servico AS cloud_name,\n    c.ind_ativo,\n\n    COALESCE(\n        u.status_operacional,\n        'SEM_LEITURA'\n    ) AS status_atual,\n\n    u.credit_percent,\n    u.checked_at\n\nFROM Config_API_IA c\n\nLEFT JOIN Cloudinary_Usage u\n    ON u.api_id = c.id\n\nWHERE c.dsc_plataforma = 'cloudinary' AND c.ind_ativo=1\n\nORDER BY c.id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -752,
+        -240
+      ],
+      "id": "a92b450f-3a28-495b-bfd0-c0ad6397d3bc",
+      "name": "MySQL | Lista Contas Cloudinary"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -528,
+        -240
+      ],
+      "id": "ddeae4cf-76cc-4f62-8ad4-a349bb04dc15",
+      "name": "Loop"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        144
+      ],
+      "id": "431e320f-9d97-41d6-9bd5-e66936603bae",
+      "name": "Wait"
+    },
+    {
+      "parameters": {
+        "jsCode": "const x = $json;\n\nif (!x.api_id || !x.cloud_name || !x.api_key || !x.api_secret) {\n  throw new Error(\n    `Conta Cloudinary incompleta. api_id=${x.api_id}, cloud_name=${x.cloud_name}`\n  );\n}\n\nconst auth = Buffer\n  .from(`${x.api_key}:${x.api_secret}`)\n  .toString('base64');\n\nreturn [{\n  json: {\n    ...x,\n    authorization: `Basic ${auth}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        -224
+      ],
+      "id": "3b1a8156-1c8b-4548-8c75-a4555d011b7b",
+      "name": "Prepara | Admin Cloudinary"
+    },
+    {
+      "parameters": {
+        "url": "=https://n8n-cloudinary-proxy.core360.workers.dev/usage",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Proxy-Key",
+              "value": "RECONFIGURE_IN_N8N_SECRET"
+            },
+            {
+              "name": "X-Cloudinary-Cloud",
+              "value": "={{ $json.cloud_name }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.authorization }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -304,
+        80
+      ],
+      "id": "d200e105-4268-4602-872b-23edc08e5948",
+      "name": "GET | Usage Cloudinary"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -32,
+        -208
+      ],
+      "id": "783bf8a6-5c1b-412e-b36b-da00ffe6a581",
+      "name": "Merge | Contexto + Usage"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -368
+      ],
+      "id": "7aa24fae-9015-4598-97c9-ce60cf291ab4",
+      "name": "No Operation"
+    },
+    {
+      "parameters": {
+        "jsCode": "const itens = $input.all();\n\nreturn itens.map(item => {\n  const r = item.json;\n\n  const body =\n    r.body && typeof r.body === 'object'\n      ? r.body\n      : {};\n\n  // Compatível com chamada direta e futura chamada via Worker\n  const httpStatus = Number(\n    body.origin_status ??\n    r.statusCode ??\n    0\n  );\n\n  const credits = body.credits;\n\n  const apiId = Number(r.api_id);\n  const cloudName = r.cloud_name ?? null;\n\n  // --------------------------------------------------\n  // Valida estrutura mínima necessária\n  // --------------------------------------------------\n\n  const temCredits =\n    credits &&\n    typeof credits === 'object';\n\n  const temUsage =\n    temCredits &&\n    Number.isFinite(Number(credits.usage));\n\n  const temLimit =\n    temCredits &&\n    Number.isFinite(Number(credits.limit));\n\n  const temPercent =\n    temCredits &&\n    Number.isFinite(Number(credits.used_percent));\n\n  const httpOk =\n    httpStatus === 200;\n\n  const usageValido =\n    httpOk &&\n    temUsage &&\n    temLimit &&\n    temPercent;\n\n  // --------------------------------------------------\n  // Motivo da falha, se houver\n  // --------------------------------------------------\n\n  let motivoErro = null;\n\n  if (!httpOk) {\n    motivoErro =\n      `HTTP_${httpStatus || 'DESCONHECIDO'}`;\n  } else if (!temCredits) {\n    motivoErro =\n      'CREDITS_NAO_ENCONTRADO';\n  } else if (!temUsage) {\n    motivoErro =\n      'CREDIT_USAGE_INVALIDO';\n  } else if (!temLimit) {\n    motivoErro =\n      'CREDIT_LIMIT_INVALIDO';\n  } else if (!temPercent) {\n    motivoErro =\n      'CREDIT_PERCENT_INVALIDO';\n  }\n\n  return {\n    json: {\n      ...r,\n\n      api_id: apiId,\n      cloud_name: cloudName,\n\n      http_status_usage:\n        httpStatus,\n\n      usage_valido:\n        usageValido,\n\n      erro_consulta_usage:\n        motivoErro\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -208
+      ],
+      "id": "7fd6300f-3feb-492d-86ea-11b555992461",
+      "name": "Valida | Resposta Usage Cloudinary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a41aef3e-5b4a-4a28-b9fa-0d4db2dde006",
+              "leftValue": "={{ $json.usage_valido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -32,
+        128
+      ],
+      "id": "d46a38d1-bcb3-48d8-a629-62b886f8f56a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json;\n\nconst apiId = Number(r.api_id);\n\nif (!apiId) {\n  throw new Error('api_id inválido na falha de Usage Cloudinary');\n}\n\nconst httpStatus = Number(\n  r.http_status_usage ??\n  r.body?.origin_status ??\n  r.statusCode ??\n  0\n);\n\nreturn [{\n  json: {\n    api_id: apiId,\n    cloud_name: r.cloud_name ?? null,\n    account_email: r.account_email ?? null,\n\n    http_status: httpStatus || 0,\n\n    erro_consulta_usage:\n      r.erro_consulta_usage ??\n      `FALHA_USAGE_HTTP_${httpStatus || 'DESCONHECIDO'}`\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        144
+      ],
+      "id": "e3768430-7c80-4b21-a8f6-3bd927f2946b",
+      "name": "Normaliza | Falha Usage Cloudinary"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE Cloudinary_Usage\nSET\n    http_status = {{ $json.http_status }},\n    updated_at = CURRENT_TIMESTAMP\nWHERE api_id = {{ $json.api_id }};",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        720,
+        144
+      ],
+      "id": "6b835363-c375-4a5e-a5fa-25d930f34853",
+      "name": "MySQL | Falha Usage Cloudinary"
+    }
+  ],
+  "connections": {
+    "Normaliza | Usage Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Classifica | Capacidade Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifica | Capacidade Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "MySQL | Atualiza Usage Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL | Lista Contas Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop": {
+      "main": [
+        [
+          {
+            "node": "No Operation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepara | Admin Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL | Atualiza Usage Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara | Admin Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "GET | Usage Cloudinary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge | Contexto + Usage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET | Usage Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Merge | Contexto + Usage",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge | Contexto + Usage": {
+      "main": [
+        [
+          {
+            "node": "Valida | Resposta Usage Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valida | Resposta Usage Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Normaliza | Usage Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normaliza | Falha Usage Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliza | Falha Usage Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "MySQL | Falha Usage Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MySQL | Falha Usage Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "START": {
+      "main": [
+        [
+          {
+            "node": "MySQL | Lista Contas Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "nodeGroups": []
+}

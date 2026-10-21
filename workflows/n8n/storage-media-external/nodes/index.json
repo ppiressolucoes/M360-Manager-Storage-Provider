@@ -1,0 +1,32 @@
+[
+  {
+    "node": "SHA-256 + Metadados",
+    "file": "sha-256-metadados.js",
+    "mode": "runOnceForEachItem",
+    "sha256": "5a8b7c886cacb565e8673317cfaabe5cea6cb3dfca6689b26d54641f6192100c"
+  },
+  {
+    "node": "Normaliza",
+    "file": "normaliza.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "56f55e3091d1845d2cae095a406e030a57ec086c07e66ab1c46d3a814d16fadc"
+  },
+  {
+    "node": "Prepara Cloudinary",
+    "file": "prepara-cloudinary.js",
+    "mode": "runOnceForEachItem",
+    "sha256": "1dae4986db5a97b574357fefe81f19467bc4607f81e4b61eba559ead96012612"
+  },
+  {
+    "node": "Valida Finalização Sucesso",
+    "file": "valida-finalizacao-sucesso.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "4d5ae604827b441da124c94a874f3d4ee54875cb966648e8d98b0f89b6114b1a"
+  },
+  {
+    "node": "Valida Finalização Falha",
+    "file": "valida-finalizacao-falha.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "d452872643c051ecdc3529f397a599bc122aa9d36602d7132282265c1e9787e9"
+  }
+]

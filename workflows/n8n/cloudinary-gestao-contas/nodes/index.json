@@ -1,0 +1,32 @@
+[
+  {
+    "node": "Normaliza | Usage Cloudinary",
+    "file": "normaliza-usage-cloudinary.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "8e5c37b3bd1e794ef8268b042b794ae0bb8cdaeb60f30cb863f1548538afa0ca"
+  },
+  {
+    "node": "Classifica | Capacidade Cloudinary",
+    "file": "classifica-capacidade-cloudinary.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "ee5a04c8376595a513633f04e6b8f8ed9929ab3db4627bbe2166400abbff9dd1"
+  },
+  {
+    "node": "Prepara | Admin Cloudinary",
+    "file": "prepara-admin-cloudinary.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "6da126b9c5eb2328951fca21a3047dc5fb118a8205818a7efc88c420514974fa"
+  },
+  {
+    "node": "Valida | Resposta Usage Cloudinary",
+    "file": "valida-resposta-usage-cloudinary.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "3a048e0a02f48c68ae84c275c2291cc29caf6f81c307c5d1f6f999d5bbaa25fc"
+  },
+  {
+    "node": "Normaliza | Falha Usage Cloudinary",
+    "file": "normaliza-falha-usage-cloudinary.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "291364423f6906028a148f37f5f6d81d0fd31bd28a97dd4ea03d8c0501bd89f1"
+  }
+]
