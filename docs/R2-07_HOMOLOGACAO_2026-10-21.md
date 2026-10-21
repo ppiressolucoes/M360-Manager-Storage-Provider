@@ -14,8 +14,8 @@ Primeiro upload demonstrado: success=true, existing=false, JPEG 840×560, 137380
 
 Leitura pública confirmada pelo usuário. Repetição retornou existing=true, mantendo hash, URL, dimensões e tamanho. Testes isolados de upload, leitura e deduplicação concluídos.
 
-SQL de cadastro inativo preparado em database/mysql/inventory/register_R2-07.sql, ainda não executado pelo agente nem confirmado pelo usuário. E-mail da conta pode ser preenchido somente no banco operacional; não é necessário ao adapter.
+Cadastro confirmado pelo SELECT do usuário: storage_id=18, alias R2-07, ind_ativo=0; endpoint, URL pública e bucket correspondem à configuração prevista. SQL em database/mysql/inventory/register_R2-07.sql. E-mail da conta pode ser preenchido somente no banco operacional; não é necessário ao adapter.
 
-Pendentes: cadastro SQL inicialmente inativo e identificação do storage_id; ativação e release integrado até registro/vínculo WP/publicação. Não presumir ID 18 nem afirmar inclusão efetiva no banco.
+Ativação para homologação preparada em database/mysql/inventory/activate_R2-07.sql, não executada pelo agente. Pendentes: confirmação da ativação e release integrado até registro/vínculo WP/publicação.
 
 Manter pattern *.r2.dev no Registry onde efetivamente salvo, endpoint dinâmico no HTTP R2 e reserva global com provider NULL. Não criar outro provider lógico/adapter por conta.
