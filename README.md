@@ -11,6 +11,7 @@ Repositório dedicado à gestão de storage externo de mídia: contrato WordPres
 
 ## Documentação
 
+- [R2-07 — preparação e homologação, 21/10/2026](docs/R2-07_HOMOLOGACAO_2026-10-21.md)
 - **[Estado atual e inventário — 20/10/2026](docs/INVENTARIO_E_CONTINUIDADE_2026-10-20.md)**
 - **[Artefatos das sprints: JSON, Code nodes e SQL](docs/ARTEFATOS_DAS_SPRINTS.md)**
 - [Contexto inicial e decisões de arquitetura](docs/CORE_STORAGE_MEDIA_EXTERNAL_CONTEXT_2026-10-13.md)

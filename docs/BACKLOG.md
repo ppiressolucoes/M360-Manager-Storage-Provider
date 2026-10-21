@@ -13,6 +13,7 @@ Atualizado em 20/10/2026, Brasília. Referência: [inventário atual](INVENTARIO
 | R2-04 (15) | Publicação confirmada | Monitorar |
 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Confirmar ativação e publicação integrada |
 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Confirmar ativação e publicação integrada |
+| R2-07 (ID pendente) | Health e primeiro upload confirmados em 21/10 | Validar leitura/deduplicação, cadastrar inativo e homologar integração |
 | Retry de até três tentativas | Aprovado, não implantado/homologado | Retomar na primeira falha real, conforme decisão vigente |
 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Definir APIs, acesso de leitura, modelo e canal de alerta |
 | OCI | Apenas sugestão | Reavaliar somente se priorizado |
