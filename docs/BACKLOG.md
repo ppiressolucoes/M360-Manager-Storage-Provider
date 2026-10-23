@@ -1,22 +1,34 @@
 # Backlog compartilhado — Core Manager Storage Provider
 
-Atualizado em 20/10/2026, Brasília. Referência: [inventário atual](INVENTARIO_E_CONTINUIDADE_2026-10-20.md).
+Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARIO_E_CONTINUIDADE_2026-10-20.md) e [plano de evolução](PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md).
 
-| Iniciativa | Estado | Próxima ação |
-| --- | --- | --- |
-| Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
-| R2-01 | Publicação confirmada | Monitorar |
-| R2-02 | Novo fluxo integral não confirmado | Obter evidência de release |
-| B2-01 (12) | Upload/deduplicação e reserva demonstrados | Confirmar execução completa após correções |
-| B2-02 (13) | Publicação confirmada | Monitorar |
-| R2-03 (14) | Publicação confirmada | Monitorar |
-| R2-04 (15) | Publicação confirmada | Monitorar |
-| R2-05 (16) | Testes isolados e cadastro inativo confirmados | Confirmar ativação e publicação integrada |
-| R2-06 (17) | Testes isolados e cadastro inativo confirmados | Confirmar ativação e publicação integrada |
-| R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Executar ativação preparada e confirmar publicação integrada |
-| Retry de até três tentativas | Aprovado, não implantado/homologado | Retomar na primeira falha real, conforme decisão vigente |
-| Monitoramento R2/B2 | Objetivo aprovado, não implantado | Definir APIs, acesso de leitura, modelo e canal de alerta |
-| OCI | Apenas sugestão | Reavaliar somente se priorizado |
+| Prioridade | Iniciativa | Estado | Próxima ação / gate |
+| --- | --- | --- | --- |
+| Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
+| Operar | R2-01 | Publicação confirmada | Monitorar |
+| P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
+| P0 | B2-01 (12) | Upload/deduplicação e reserva demonstrados | Confirmar execução completa após correções |
+| Operar | B2-02 (13) | Publicação confirmada | Monitorar |
+| Operar | R2-03 (14) | Publicação confirmada | Monitorar |
+| Operar | R2-04 (15) | Publicação confirmada | Monitorar |
+| P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
+| P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
+| P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
+| P1 | Baseline operacional | Artefatos públicos não equivalem integralmente ao runtime | Recuperar export atual, Code nodes, Worker R2 e `SHOW CREATE PROCEDURE` |
+| P2 | Retry de até três tentativas | Aprovado, não implantado/homologado | Preparar máquina de estados; implementar a partir da primeira falha real sanitizada |
+| P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
+| P4 | Entrega R2 de produção | URLs `r2.dev` usadas em homologação | Planejar domínio/CDN, compatibilidade e rollback |
+| Aguardar | OCI | Apenas sugestão | Reavaliar somente se priorizado |
+
+## Ordem de evolução consolidada em 23/10
+
+1. **P0 — evidência:** fechar R2-05, R2-06, R2-07, R2-02 e B2-01 sem forçar o rodízio.
+2. **P1 — baseline:** recuperar e sanitizar os artefatos efetivamente operacionais antes de editar o fluxo.
+3. **P2 — resiliência:** homologar retry de até três tentativas a partir da primeira falha real.
+4. **P3 — observabilidade:** implementar monitoramento R2/B2 inicialmente sem bloqueio automático.
+5. **P4 — produção:** definir entrega R2, compatibilidade de URLs, SLOs e rollback.
+
+Critérios de aceite, dependências e limites estão no [plano de evolução de 23/10](PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md). Esta consolidação não executou ativações, imports, procedures ou testes contra runtimes operacionais.
 
 ## Próxima retomada de falha
 

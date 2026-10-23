@@ -16,6 +16,8 @@
 
 - 13–14/10: arquitetura, reserva/finalização, Cloudinary/R2-01 e expansão B2. B2-02 publicado; detalhes nos registros históricos.
 - 15–20/10: R2-03/R2-04 publicados; R2-05/R2-06 testes isolados e cadastro. Monitoramento solicitado, sem implantação. Atualização de continuidade em 20/10 reúne os artefatos disponíveis; datas dos arquivos não provam execução.
+- 21/10: R2-07 com testes isolados, cadastro inativo confirmado e ativação preparada; publicação integrada permanece pendente.
+- 23/10: backlog recuperado e plano de evolução consolidado em `docs/PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md`. A rodada foi documental: nenhuma ativação, importação n8n, procedure ou chamada a runtime operacional foi executada.
 
 ## Regras
 
