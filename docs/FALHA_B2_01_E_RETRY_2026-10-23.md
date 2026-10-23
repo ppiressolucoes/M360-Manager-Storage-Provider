@@ -76,6 +76,8 @@ Uma nova chamada real de B2-01 retornou `b2_lookup_failed`, HTTP 502 e upstream 
 
 A homologação controlada anterior de B2-01 usou `m360/featured`, assim como a primeira versão de `/health/storage`. O alerta não informa o folder, portanto ainda não distingue falha geral de credencial de restrição a `pel/featured` ou `trilhas/featured`. O health candidato foi ampliado para realizar HEAD somente leitura nos três prefixos e retornar `probe_statuses` por portal. B2-01 volta a P0 até esse gate ser executado; não rotacionar a chave sem antes observar os três status.
 
+O health multiprefixo executado em B2-01 retornou m360=404, pel=403 e trilhas=403, com `bucket_read_verified=false`. A causa está confirmada como escopo de autorização por prefixo: a chave atual atende m360, mas não os outros dois portais. Isso explica a homologação anterior bem-sucedida e a recorrência posterior. A correção é criar uma nova Application Key para o bucket B2-01 com acesso Read and Write, listagem de nomes de buckets habilitada e file name prefix vazio; atualizar `B2_KEY_ID` e `B2_APPLICATION_KEY` juntos, preservando a chave antiga para rollback até completar os gates.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
