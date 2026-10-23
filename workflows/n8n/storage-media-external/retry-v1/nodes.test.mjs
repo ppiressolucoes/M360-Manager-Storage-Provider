@@ -69,6 +69,25 @@ assert.equal(forbiddenLookup[0].json.failure_upstream_status, 403);
 assert.equal(forbiddenLookup[0].json.bloqueio_minutos, 60);
 assert.equal(forbiddenLookup[0].json.pode_tentar_novamente, true);
 
+const missingR2PublicBase = await run('classifica-falha-upload.js', [{
+  json: {
+    ...normalized[0].json,
+    provider: 'cloudflare_r2',
+    storage_id: 11,
+    error: {
+      message: '500 - "{\\"success\\":false,\\"provider\\":\\"cloudflare_r2\\",\\"error\\":\\"public_base_url_not_configured\\"}"',
+      code: 'ERR_BAD_RESPONSE',
+      status: 500,
+    },
+  },
+  binary,
+}]);
+assert.equal(missingR2PublicBase[0].json.failure_code, 'public_base_url_not_configured');
+assert.equal(missingR2PublicBase[0].json.failure_class, 'configuracao_storage');
+assert.equal(missingR2PublicBase[0].json.failure_http_status, 500);
+assert.equal(missingR2PublicBase[0].json.bloqueio_minutos, 60);
+assert.equal(missingR2PublicBase[0].json.pode_tentar_novamente, true);
+
 const finalized = await run(
   'valida-finalizacao-falha-retry.js',
   [{ json: [[{ finalizacao_ok: 1, motivo: 'storage_bloqueado', storage_id: 12 }]] }],

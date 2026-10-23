@@ -6,7 +6,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | --- | --- | --- | --- |
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
-| P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
+| P0 | R2-02 (11) | Falha real: Worker respondeu `public_base_url_not_configured` | Configurar `PUBLIC_BASE_URL`, reimplantar e reconciliar o mesmo upload |
 | Operar | B2-01 (12) | HEAD, PUT, deduplicação e entrega pública homologados no deployment atual | Monitorar eventual recorrência do 403 histórico |
 | Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |

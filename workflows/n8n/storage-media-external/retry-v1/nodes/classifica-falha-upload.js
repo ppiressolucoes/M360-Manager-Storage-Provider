@@ -66,6 +66,7 @@ const inputErrors = new Set([
 const storageConfigurationErrors = new Set([
   'unauthorized',
   'missing_configuration',
+  'public_base_url_not_configured',
   'route_not_found',
   'invalid_endpoint',
   'invalid_public_base',

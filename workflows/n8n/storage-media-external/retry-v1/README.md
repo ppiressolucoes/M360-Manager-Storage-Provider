@@ -77,7 +77,9 @@ A falha inicial retornou HTTP 502 do Worker, código `b2_upload_failed` e status
 
 Depois da publicação da v0.4, B2-01 e B2-02 emitiram alertas reais independentes com `b2_lookup_failed`, HTTP 502 e upstream 403 na tentativa 1/3. A saída sanitizada de B2-01 confirma que a recusa aconteceu no `HEAD` anterior ao PUT. O classificador da v0.4 considerou apenas o HTTP externo e marcou a falha como transitória; este candidato passa a dar precedência ao upstream 401/403/404, classificando-o como `configuracao_storage` com cooldown de 60 minutos. Os testes locais foram atualizados e aprovados. O snapshot canônico permanece na v0.4 até o código ser aplicado, publicado e reexportado como v0.5.
 
-Os e-mails isoladamente confirmam classificação, finalização validada e envio do alerta. Uma captura posterior da execução confirmou também `Restaura Contexto Após Alerta`, saída verdadeira do IF, segunda passagem por preparação/reserva/normalização/Switch, seleção de Cloudflare R2 e `Valida Finalização Sucesso`. O retry entre providers está homologado. Rotação dos segredos expostos, Error Workflow global, correção dos acessos B2 e publicação do classificador revisado permanecem pendentes.
+Os e-mails isoladamente confirmam classificação, finalização validada e envio do alerta. Uma captura posterior da execução confirmou também `Restaura Contexto Após Alerta`, saída verdadeira do IF, segunda passagem por preparação/reserva/normalização/Switch, seleção de Cloudflare R2 e `Valida Finalização Sucesso`. O retry entre providers está homologado. Os dois Workers B2 foram recuperados e homologados. Rotação da chave de proxy compartilhada, Error Workflow global e publicação do classificador revisado permanecem pendentes.
+
+Uma falha real posterior de R2-02 retornou HTTP 500 com `public_base_url_not_configured`. O candidato também reconhece esse código como `configuracao_storage`, mantendo fallback e aplicando cooldown de 60 minutos. A correção operacional é configurar `PUBLIC_BASE_URL` no runtime do Worker; o valor existente no cadastro do Core não é injetado no Cloudflare.
 
 ## Progresso informado
 
@@ -113,5 +115,7 @@ Os e-mails isoladamente confirmam classificação, finalização validada e envi
 - 23/10/2026: dois alertas reais independentes confirmaram `b2_lookup_failed` no HEAD inicial de B2-01 e B2-02, ambos com upstream 403 e tentativa 1/3;
 - 23/10/2026: captura integral de uma execução confirmou alerta, restauração do contexto, retorno do IF, segunda reserva global, mudança de `backblaze_b2` para `cloudflare_r2`, upload e finalização com sucesso;
 - 23/10/2026: regra candidata corrigida para priorizar upstream 401/403/404 como `configuracao_storage`, cooldown de 60 minutos e fallback ainda permitido; teste de regressão aprovado, ainda não implantado no n8n;
-- próximo passo operacional: corrigir credenciais/capabilities/escopo das duas contas B2, aplicar o classificador no n8n e publicar/auditar v0.5; rotacionar a chave compartilhada e criar Error Workflow para falhas não tratadas;
+- 23/10/2026: B2-01 e B2-02 recuperados e homologados em leitura, escrita, deduplicação e entrega pública; B2-02 exigiu nova Application Key;
+- 23/10/2026: erro real `public_base_url_not_configured` de R2-02 acrescentado às falhas de configuração com teste de regressão;
+- próximo passo operacional: configurar `PUBLIC_BASE_URL` em R2-02, reconciliar o upload e aplicar/publicar/auditar o classificador v0.5; rotacionar a chave de proxy compartilhada e criar Error Workflow para falhas não tratadas;
 - códigos implantados de B2-01 e B2-02 preservados e comparados; ambos correspondem ao baseline pré-reconciliação.
