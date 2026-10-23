@@ -35,7 +35,7 @@ Em 23/10/2026, B2-01 respondeu ao health autenticado de storage com `probe_statu
 
 B2-02 recebeu a mesma revisão, mas seu primeiro health autenticado retornou `probe_status=403` e `bucket_read_verified=false`. Após criar um novo Application Key e atualizar juntos os dois secrets da segunda conta, o probe passou a `probe_status=404` e `bucket_read_verified=true`. O contraste confirma a configuração anterior como causa do 403, não o módulo comum ou o proxy do n8n. A chave anterior deve permanecer para rollback até PUT, deduplicação e entrega pública serem aprovados.
 
-Após uma recorrência em B2-01, o health multiprefixo retornou m360=404, pel=403 e trilhas=403. A chave então implantada estava autorizada somente para o prefixo m360 e precisa ser substituída por uma chave sem file name prefix antes de B2-01 voltar ao estado operacional.
+Após uma recorrência em B2-01, o health multiprefixo retornou m360=404, pel=403 e trilhas=403. Objetos PEL históricos no mesmo bucket demonstram que o caminho funcionou anteriormente. O resultado isola uma diferença na credencial/configuração atualmente implantada, mas não determina sozinho se a causa é file name prefix, capability de listagem, troca de chave ou expiração. Auditar a chave atual e executar um HEAD autenticado direto ao B2 sobre um objeto PEL existente antes de decidir pela rotação; a URL pública pode ser atendida por cache e não comprova a permissão da chave atual.
 
 O PUT controlado posterior de B2-02 criou objeto novo com `existing=false` e `reconciled_after_put_error=false`, aprovando também a escrita com a nova chave. Deduplicação e entrega pública ainda são os gates antes de revogar a chave anterior.
 
