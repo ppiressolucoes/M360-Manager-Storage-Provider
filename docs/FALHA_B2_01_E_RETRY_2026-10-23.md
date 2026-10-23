@@ -68,6 +68,8 @@ O upload controlado seguinte no Worker B2-02 criou um objeto novo com `existing=
 
 A reexecução do mesmo upload no B2-02 retornou `existing=true` e `reconciled_after_put_error=false`. O HEAD do objeto existente e a deduplicação sem novo PUT estão aprovados com a nova chave. Resta apenas validar a entrega pela URL pública antes de revogar a Application Key anterior.
 
+A entrega pública do objeto de B2-02 foi validada sem autenticação. A nova Application Key está homologada ponta a ponta: HEAD de ausência, PUT, HEAD de objeto existente/deduplicação e GET público. A chave anterior deixa de ser necessária para rollback e pode ser revogada, desde que o operador confirme o nome/ID antigo sem expô-lo e repita `GET /health/storage` depois da revogação.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:

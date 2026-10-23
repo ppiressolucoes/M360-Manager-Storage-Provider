@@ -8,7 +8,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
 | Operar | B2-01 (12) | HEAD, PUT, deduplicação e entrega pública homologados no deployment atual | Monitorar eventual recorrência do 403 histórico |
-| P0 | B2-02 (13) | Nova Application Key aprovou HEAD, PUT e deduplicação `existing=true` | Validar entrega pública; depois revogar a chave anterior |
+| Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
@@ -37,6 +37,8 @@ O gatilho ocorreu em B2-01 em 23/10: `b2_upload_failed`, HTTP 502 e upstream 520
 Após a publicação da v0.4, B2-01 e B2-02 produziram alertas reais independentes de `b2_lookup_failed`, com HTTP 502 do Worker e upstream 403 no `HEAD` inicial. Não houve tentativa de PUT nessas ocorrências. O alerta/finalização de falha está comprovado, mas os e-mails não demonstram a passagem pelo retorno do retry nem o resultado terminal. O candidato agora dá precedência ao status upstream 401/403/404, classifica como `configuracao_storage` e aplica cooldown de 60 minutos. A causa operacional deve ser tratada nas credenciais, capabilities e escopo de bucket de cada conta B2.
 
 Uma captura completa de execução fornecida em seguida comprovou o restante do laço para uma ocorrência: após falhar no ramo B2, finalizar a reserva, alertar e restaurar o contexto, o IF retornou à preparação; a segunda reserva selecionou Cloudflare R2 e terminou em `Valida Finalização Sucesso`. Portanto, o retry entre providers está homologado em runtime. Continua pendente corrigir os dois acessos B2 e promover o classificador revisado para a v0.5.
+
+Os dois acessos B2 foram posteriormente recuperados. B2-01 passou por health autenticado, PUT, deduplicação e entrega pública no deployment atual. B2-02 reproduziu o 403 no probe; a criação de uma nova Application Key corrigiu o acesso e passou pelos mesmos quatro gates. Após revogar a chave anterior de B2-02 e repetir o probe, a prioridade retorna à publicação/auditoria da v0.5 do classificador.
 
 ## Monitoramento
 
