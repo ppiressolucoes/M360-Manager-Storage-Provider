@@ -7,8 +7,8 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
-| P0 | B2-01 (12) | HEAD ausente, PUT e HEAD existente aprovados; deduplicação retornou `existing=true` | Confirmar entrega pública e manter monitoramento do 403 histórico |
-| P0 | B2-02 (13) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Repetir correção independente após homologar B2-01 |
+| Operar | B2-01 (12) | HEAD, PUT, deduplicação e entrega pública homologados no deployment atual | Monitorar eventual recorrência do 403 histórico |
+| P0 | B2-02 (13) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Implantar a mesma revisão preservando configuração própria; iniciar pelo health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |

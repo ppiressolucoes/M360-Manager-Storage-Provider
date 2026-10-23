@@ -56,6 +56,8 @@ Na sequência, o mesmo item da execução anterior foi enviado diretamente ao no
 
 A reexecução imediata do mesmo upload retornou `existing=true` e `reconciled_after_put_error=false`. O Worker obteve HEAD 200 para o objeto existente e evitou um novo PUT, aprovando também a deduplicação content-addressed. Com isso, B2-01 tem leitura de ausência, escrita, leitura de objeto existente e deduplicação comprovadas no deployment atual. A evidência não explica retroativamente o 403 anterior; qualquer recorrência deve ser correlacionada com deployment, horário e request ID do B2.
 
+A URL pública resultante também foi aberta e validada sem autenticação. B2-01 fica homologado ponta a ponta no deployment atual: health autenticado, leitura de ausência, PUT, deduplicação e entrega pública. O foco operacional passa a B2-02, repetindo os mesmos gates sem copiar secrets ou variáveis entre contas.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
