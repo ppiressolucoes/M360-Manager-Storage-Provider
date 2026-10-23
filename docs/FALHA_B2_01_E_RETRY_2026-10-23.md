@@ -13,6 +13,28 @@ Atualizado em 23/10/2026, Brasília. Fonte: execução e captura fornecidas pelo
 
 O retorno confirma que o Worker chegou ao PUT do B2 e não recebeu resposta de sucesso. Não comprova a causa raiz do status 520 nem que o objeto deixou de ser persistido. Por isso a falha é classificada como escrita ambígua e recuperável.
 
+## Evidências reais após a publicação da v0.4
+
+Dois alertas reais e independentes foram recebidos em 23/10/2026:
+
+- B2-01, storage ID 12, às 20:22 UTC: `b2_lookup_failed`, HTTP 502 do Worker e status upstream 403, tentativa 1/3;
+- B2-02, storage ID 13, às 21:32 UTC: `b2_lookup_failed`, HTTP 502 do Worker e status upstream 403, tentativa 1/3.
+
+Uma saída sanitizada do upload de B2-01 confirmou que a falha ocorreu no primeiro `HEAD`, antes de qualquer `PUT`. Portanto, esta ocorrência não representa escrita ambígua: o B2 recusou a consulta ao objeto. O caminho, o MIME e os metadados já tinham passado pelas validações do workflow e do Worker.
+
+Os alertas provam que a saída de erro do upload alcançou o classificador, que a reserva foi finalizada e validada e que o e-mail foi enviado. Eles não provam, isoladamente, a execução de `Restaura Contexto Após Alerta`, a seleção de uma segunda reserva ou o sucesso/erro terminal da execução. Como os dois alertas ocorreram com tentativa 1/3 e 70 minutos de diferença, não há evidência de que B2-02 tenha sido o fallback da ocorrência de B2-01.
+
+O status upstream 403 deve prevalecer sobre o envelope HTTP 502. O candidato de `Classifica Falha Upload` foi corrigido para tratar upstream 401/403/404 como `configuracao_storage`, mantendo fallback para outro storage e aplicando cooldown de 60 minutos ao storage defeituoso. A regra passou em teste automatizado, mas ainda não representa a v0.4 publicada.
+
+O mesmo sintoma nas duas contas aponta para um procedimento comum de configuração. Verificar em cada conta, sem copiar valores entre elas:
+
+1. se `B2_KEY_ID` e `B2_APPLICATION_KEY` pertencem ao mesmo Application Key;
+2. se a chave está autorizada para o bucket configurado;
+3. se possui no mínimo as capabilities necessárias a `HEAD` e `PUT`, especialmente `readFiles` e `writeFiles`;
+4. se bucket, região e endpoint S3 pertencem à mesma conta/bucket.
+
+`/health` com `configured=true` confirma apenas a presença das variáveis. Não valida credenciais, escopo, capabilities ou acesso ao bucket.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:

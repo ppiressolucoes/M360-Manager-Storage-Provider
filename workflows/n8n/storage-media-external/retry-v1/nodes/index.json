@@ -15,7 +15,7 @@
     "node": "Classifica Falha Upload",
     "file": "classifica-falha-upload.js",
     "mode": "runOnceForAllItems",
-    "sha256": "6c68770dc3c6b33d2701f1be9bfa1f8fc4b4aeea78c8222df3a81b76737e1b6f"
+    "sha256": "9e4dfddf65852ae91c63bb2e8e6b8c0dd425a237253f7b69a3192ab54f1fc3bd"
   },
   {
     "node": "Valida Finalização Falha",

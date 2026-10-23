@@ -87,7 +87,8 @@ if (inputErrors.has(failureCode) || httpStatus === 413) {
   failureClass = 'entrada_invalida';
 } else if (
   storageConfigurationErrors.has(failureCode) ||
-  [401, 403, 404].includes(httpStatus)
+  [401, 403, 404].includes(httpStatus) ||
+  [401, 403, 404].includes(upstreamStatus)
 ) {
   failureClass = 'configuracao_storage';
   retryable = true;

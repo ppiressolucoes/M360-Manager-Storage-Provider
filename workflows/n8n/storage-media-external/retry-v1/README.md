@@ -1,6 +1,6 @@
 # Retry v1 — candidato para homologação
 
-Este pacote foi preparado após a primeira falha real sanitizada de upload em B2-01, em 23/10/2026. A versão 0.4 foi publicada no n8n e o export `../SUB_Storage_Media_External.json` contém seu snapshot sanitizado auditado. O caminho de sucesso foi homologado; retry e alerta aguardam observação em falha real.
+Este pacote foi preparado após a primeira falha real sanitizada de upload em B2-01, em 23/10/2026. A versão 0.4 foi publicada no n8n e o export `../SUB_Storage_Media_External.json` contém seu snapshot sanitizado auditado. O caminho de sucesso e o alerta de falha foram observados; a comprovação do retorno do retry e do resultado terminal continua pendente.
 
 ## Comportamento
 
@@ -73,7 +73,11 @@ Classifica Falha -> Finaliza Falha -> Valida Finalização -> IF retry -- true -
 
 ## Limite da evidência atual
 
-A falha observada retornou HTTP 502 do Worker, código `b2_upload_failed` e status upstream 520. Isso comprova uma resposta ambígua do PUT, não a causa raiz no B2 nem a ausência do objeto. A revisão reconciliadora foi implantada pelo usuário nos dois Workers e seus endpoints `/health` foram validados. A versão 0.4 do n8n está publicada e os testes automatizados locais estão concluídos; observação da primeira falha real, rotação dos segredos expostos e Error Workflow global permanecem pendentes.
+A falha inicial retornou HTTP 502 do Worker, código `b2_upload_failed` e status upstream 520. Isso comprova uma resposta ambígua do PUT, não a causa raiz no B2 nem a ausência do objeto. A revisão reconciliadora foi implantada pelo usuário nos dois Workers e seus endpoints `/health` foram validados.
+
+Depois da publicação da v0.4, B2-01 e B2-02 emitiram alertas reais independentes com `b2_lookup_failed`, HTTP 502 e upstream 403 na tentativa 1/3. A saída sanitizada de B2-01 confirma que a recusa aconteceu no `HEAD` anterior ao PUT. O classificador da v0.4 considerou apenas o HTTP externo e marcou a falha como transitória; este candidato passa a dar precedência ao upstream 401/403/404, classificando-o como `configuracao_storage` com cooldown de 60 minutos. Os testes locais foram atualizados e aprovados. O snapshot canônico permanece na v0.4 até o código ser aplicado, publicado e reexportado como v0.5.
+
+Os e-mails confirmam classificação, finalização validada e envio do alerta. Não confirmam a restauração posterior do contexto, a segunda tentativa ou o resultado terminal. Rotação dos segredos expostos e Error Workflow global também permanecem pendentes.
 
 ## Progresso informado
 
@@ -106,5 +110,7 @@ A falha observada retornou HTTP 502 do Worker, código `b2_upload_failed` e stat
 - 23/10/2026: versão 0.3 publicada e exportada, mas a auditoria encontrou `pinData` em **Start Storage**, alerta ligado apenas à saída `true` do IF, falha terminal sem alerta e saída de erro do Gmail sem continuidade; v0.3 não foi promovido ao snapshot canônico;
 - 23/10/2026: versão 0.4 corrigida e publicada; sem `pinData`, alerta antes do IF, saídas de sucesso/erro do Gmail convergindo em **Restaura Contexto Após Alerta**, contexto/binário preservados e export final sanitizado;
 - 23/10/2026: snapshot v0.4 validado com 23 nodes, nove Code nodes indexados, seis artefatos do retry e testes automatizados aprovados;
-- próximo passo operacional: observar a primeira falha real e analisar o e-mail; rotacionar a chave compartilhada e criar Error Workflow para falhas não tratadas;
+- 23/10/2026: dois alertas reais independentes confirmaram `b2_lookup_failed` no HEAD inicial de B2-01 e B2-02, ambos com upstream 403 e tentativa 1/3;
+- 23/10/2026: regra candidata corrigida para priorizar upstream 401/403/404 como `configuracao_storage`, cooldown de 60 minutos e fallback ainda permitido; teste de regressão aprovado, ainda não implantado no n8n;
+- próximo passo operacional: corrigir credenciais/capabilities/escopo das duas contas B2, aplicar o classificador no n8n, publicar v0.5 e verificar a tentativa seguinte e o resultado terminal; rotacionar a chave compartilhada e criar Error Workflow para falhas não tratadas;
 - códigos implantados de B2-01 e B2-02 preservados e comparados; ambos correspondem ao baseline pré-reconciliação.

@@ -51,6 +51,24 @@ assert.equal(failed[0].json.pode_tentar_novamente, true);
 assert.deepEqual(failed[0].json.retry_context.storage_ids_tentados, [12]);
 assert.equal('error' in failed[0].json, false);
 
+const forbiddenLookup = await run('classifica-falha-upload.js', [{
+  json: {
+    ...normalized[0].json,
+    error: {
+      message: '502 - "{\\"error\\":\\"b2_lookup_failed\\",\\"upstream_status\\":403}"',
+      code: 'ERR_BAD_RESPONSE',
+      status: 502,
+    },
+  },
+  binary,
+}]);
+assert.equal(forbiddenLookup[0].json.failure_code, 'b2_lookup_failed');
+assert.equal(forbiddenLookup[0].json.failure_class, 'configuracao_storage');
+assert.equal(forbiddenLookup[0].json.failure_http_status, 502);
+assert.equal(forbiddenLookup[0].json.failure_upstream_status, 403);
+assert.equal(forbiddenLookup[0].json.bloqueio_minutos, 60);
+assert.equal(forbiddenLookup[0].json.pode_tentar_novamente, true);
+
 const finalized = await run(
   'valida-finalizacao-falha-retry.js',
   [{ json: [[{ finalizacao_ok: 1, motivo: 'storage_bloqueado', storage_id: 12 }]] }],

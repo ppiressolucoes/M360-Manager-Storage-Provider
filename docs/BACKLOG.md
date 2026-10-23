@@ -7,15 +7,15 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
-| P0 | B2-01 (12) | Upload/deduplicação e reserva demonstrados | Confirmar execução completa após correções |
-| Operar | B2-02 (13) | Publicação confirmada | Monitorar |
+| P0 | B2-01 (12) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Corrigir credencial/capabilities/escopo do bucket e retestar |
+| P0 | B2-02 (13) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Corrigir credencial/capabilities/escopo do bucket e retestar |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
 | P1 | Baseline operacional | Export v0.4 e nove Code nodes recuperados/sanitizados; Worker R2 e DDLs ainda incompletos | Recuperar Worker R2 e `SHOW CREATE PROCEDURE` |
-| P2 | Retry de até três tentativas | v0.4 publicada, sucesso R2 homologado, snapshot/testes aprovados; falha não será provocada | Observar primeira falha/e-mail; rotacionar chave compartilhada; criar Error Workflow global |
+| P2 | Retry de até três tentativas | v0.4 publicou alertas reais; classificador marcou 403 upstream incorretamente como transitório | Aplicar classificador candidato, publicar v0.5 e comprovar tentativa seguinte/resultado terminal |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
 | P4 | Entrega R2 de produção | URLs `r2.dev` usadas em homologação | Planejar domínio/CDN, compatibilidade e rollback |
 | Aguardar | OCI | Apenas sugestão | Reavaliar somente se priorizado |
@@ -33,6 +33,8 @@ Critérios de aceite, dependências e limites estão no [plano de evolução de 
 ## Próxima retomada de falha
 
 O gatilho ocorreu em B2-01 em 23/10: `b2_upload_failed`, HTTP 502 e upstream 520. A evidência e o candidato estão em [Falha B2-01 e preparação do retry](FALHA_B2_01_E_RETRY_2026-10-23.md). Classificar erro sanitizado; finalizar e validar reserva antes de nova; preservar binário/contexto e limitar tentativas. Cooldown temporário impede repetição imediata da conta. Timeout ou resposta ambígua pode ter escrito objeto e deve ser reconciliado. Falha de finalização e tentativas esgotadas encerram com erro. Os artefatos locais não provam implantação do laço.
+
+Após a publicação da v0.4, B2-01 e B2-02 produziram alertas reais independentes de `b2_lookup_failed`, com HTTP 502 do Worker e upstream 403 no `HEAD` inicial. Não houve tentativa de PUT nessas ocorrências. O alerta/finalização de falha está comprovado, mas os e-mails não demonstram a passagem pelo retorno do retry nem o resultado terminal. O candidato agora dá precedência ao status upstream 401/403/404, classifica como `configuracao_storage` e aplica cooldown de 60 minutos. A causa operacional deve ser tratada nas credenciais, capabilities e escopo de bucket de cada conta B2.
 
 ## Monitoramento
 
