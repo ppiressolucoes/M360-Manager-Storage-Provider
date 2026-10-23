@@ -1,4 +1,5 @@
 const dados = $input.first().json;
+
 const resultado = Array.isArray(dados)
   ? Array.isArray(dados[0])
     ? dados[0][0]
@@ -14,6 +15,7 @@ if (Number(resultado?.finalizacao_ok) !== 1) {
 }
 
 const contexto = $('Classifica Falha Upload').item;
+
 if (Number(resultado.storage_id) !== Number(contexto.json.storage_id)) {
   throw new Error('Finalização não corresponde ao storage da tentativa.');
 }

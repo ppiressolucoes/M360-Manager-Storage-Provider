@@ -4,23 +4,30 @@ const erro = entrada.error ?? {};
 
 function parseJsonRecursivo(value) {
   let atual = value;
+
   for (let i = 0; i < 3; i++) {
     if (atual && typeof atual === 'object') return atual;
     if (typeof atual !== 'string') return null;
+
     const texto = atual.trim();
+
     try {
       atual = JSON.parse(texto);
       continue;
     } catch {}
+
     const aposStatus = texto.replace(/^\s*\d{3}\s*-\s*/, '');
+
     if (aposStatus !== texto) {
       try {
         atual = JSON.parse(aposStatus);
         continue;
       } catch {}
     }
+
     return null;
   }
+
   return atual && typeof atual === 'object' ? atual : null;
 }
 
@@ -31,13 +38,16 @@ const corpo =
   {};
 
 const statusPelaMensagem = String(erro.message ?? '').match(/^\s*(\d{3})\b/);
+
 const httpStatus = Number(
   erro.status ??
   erro.response?.status ??
   statusPelaMensagem?.[1] ??
   0
 );
+
 const upstreamStatus = Number(corpo.upstream_status ?? 0);
+
 const failureCode = String(
   corpo.error ??
   erro.code ??
@@ -52,6 +62,7 @@ const inputErrors = new Set([
   'sha256_mismatch',
   'existing_object_size_mismatch',
 ]);
+
 const storageConfigurationErrors = new Set([
   'unauthorized',
   'missing_configuration',
@@ -59,6 +70,7 @@ const storageConfigurationErrors = new Set([
   'invalid_endpoint',
   'invalid_public_base',
 ]);
+
 const ambiguousCodes = new Set([
   'b2_upload_failed',
   'ETIMEDOUT',
@@ -99,6 +111,7 @@ const retryContext = entrada.retry_context ?? {};
 const tentativa = Number(retryContext.tentativa ?? 1);
 const maxTentativas = Number(retryContext.max_tentativas ?? 3);
 const storageId = Number(entrada.storage_id);
+
 const storageIdsTentados = [...new Set([
   ...(Array.isArray(retryContext.storage_ids_tentados)
     ? retryContext.storage_ids_tentados

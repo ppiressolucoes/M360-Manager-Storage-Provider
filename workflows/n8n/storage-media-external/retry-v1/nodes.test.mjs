@@ -60,6 +60,30 @@ assert.equal(finalized[0].json.finalizacao_falha_ok, true);
 assert.equal('reservation_token' in finalized[0].json, false);
 assert.equal(finalized[0].binary, binary);
 
+const alertPrepared = await run('prepara-alerta-falha.js', [{
+  json: {
+    ...finalized[0].json,
+    reservation_token: 'nao-pode-vazar',
+    original_filename: 'nao-pode-vazar.jpg',
+    secure_url: 'https://nao-pode-vazar.example/media.jpg',
+  },
+  binary,
+}]);
+assert.match(alertPrepared[0].json.alert_subject, /Falha de upload/);
+assert.equal(alertPrepared[0].json.pode_tentar_novamente, true);
+assert.equal('reservation_token' in alertPrepared[0].json, false);
+assert.equal('original_filename' in alertPrepared[0].json, false);
+assert.equal('secure_url' in alertPrepared[0].json, false);
+assert.equal('binary' in alertPrepared[0], false);
+
+const restoredAfterAlert = await run(
+  'restaura-contexto-apos-alerta.js',
+  [{ json: { gmail_message_id: 'mock-message' } }],
+  { 'Valida Finalização Falha': finalized[0] },
+);
+assert.deepEqual(restoredAfterAlert[0].json, finalized[0].json);
+assert.equal(restoredAfterAlert[0].binary, binary);
+
 const secondAttempt = await run('prepara-tentativa.js', finalized);
 assert.equal(secondAttempt[0].json.retry_context.tentativa, 2);
 assert.deepEqual(secondAttempt[0].json.retry_context.storage_ids_tentados, [12]);
@@ -87,4 +111,4 @@ assert.equal(invalidInputFailure[0].json.failure_class, 'entrada_invalida');
 assert.equal(invalidInputFailure[0].json.pode_tentar_novamente, false);
 assert.equal(invalidInputFailure[0].json.bloqueio_minutos, 0);
 
-console.log('Retry n8n: preparação, classificação e finalização validadas.');
+console.log('Retry n8n: preparação, classificação, alerta e finalização validados.');

@@ -1,18 +1,22 @@
-
 const item = $input.first();
-const origem = $('Start Storage').first();
-
-// A SP retorna os dados como array dentro do JSON.
+const contexto = $('Prepara Tentativa').item;
 const dados = item.json;
+
 const reserva = Array.isArray(dados)
-  ? dados[0]
-  : Array.isArray(dados?.[0])
+  ? Array.isArray(dados[0])
     ? dados[0][0]
-    : dados;
+    : dados[0]
+  : dados;
 
 if (!reserva || typeof reserva !== 'object') {
   throw new Error(
     'Não foi possível localizar o objeto da reserva na saída da SP.'
+  );
+}
+
+if (!contexto.binary?.data) {
+  throw new Error(
+    'Binário original não encontrado em Prepara Tentativa.'
   );
 }
 
@@ -21,25 +25,14 @@ const reservaOk =
   reserva.reserva_ok === '1' ||
   reserva.reserva_ok === true;
 
-if (!reservaOk) {
-  throw new Error(
-    `Reserva não autorizada: ${reserva.motivo || 'motivo não informado'}`
-  );
-}
-
-if (!origem.binary?.data) {
-  throw new Error(
-    'Arquivo binário original não encontrado em Start Storage.'
-  );
-}
-
-return [
-  {
-    json: {
-      ...reserva,
-      'ind-api-folder': origem.json['ind-api-folder'],
-      storage_folder: origem.json['ind-api-folder'],
-    },
-    binary: origem.binary,
+return [{
+  json: {
+    ...contexto.json,
+    ...reserva,
+    reserva_ok: reservaOk ? 1 : 0,
+    storage_folder:
+      contexto.json.storage_folder ??
+      contexto.json['ind-api-folder'],
   },
-];
+  binary: contexto.binary,
+}];

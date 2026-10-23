@@ -9,11 +9,15 @@ const reserva = Array.isArray(dados)
   : dados;
 
 if (!reserva || typeof reserva !== 'object') {
-  throw new Error('Não foi possível localizar o objeto da reserva na saída da SP.');
+  throw new Error(
+    'Não foi possível localizar o objeto da reserva na saída da SP.'
+  );
 }
 
 if (!contexto.binary?.data) {
-  throw new Error('Binário original não encontrado em Prepara Tentativa.');
+  throw new Error(
+    'Binário original não encontrado em Prepara Tentativa.'
+  );
 }
 
 const reservaOk =

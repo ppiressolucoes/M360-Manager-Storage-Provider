@@ -2,7 +2,7 @@
 
 Arquivo para colar no editor Cloudflare: `flow-b2-storage-proxy-hml.mjs` (Worker Module, sem dependências).
 
-Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. A alteração e os testes locais estão versionados, mas a implantação no Worker permanece pendente de confirmação.
+Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. O usuário implantou a revisão nos Workers B2-01 e B2-02 e validou `/health` com `configured=true`; escrita real após essa revisão ainda requer homologação.
 
 Worker: `flow-b2-storage-proxy-hml.core360.workers.dev`.
 Bucket privado confirmado pelo usuário: `core360-storage-b2-hml`.

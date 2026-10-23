@@ -8,7 +8,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.2,
       "position": [
-        -976,
+        -1152,
         -256
       ],
       "id": "333601d1-d732-4add-ac97-a93e712ed8b6",
@@ -56,8 +56,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -272,
-        -256
+        -1168,
+        160
       ],
       "id": "53edc504-fab2-49d7-8614-ea468f9ed471",
       "name": "IF | Reserva OK?"
@@ -70,20 +70,20 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        -272
+        -960,
+        144
       ],
       "id": "49226b68-034e-49a9-9a5b-37db45b861e8",
       "name": "SHA-256 + Metadados"
     },
     {
       "parameters": {
-        "jsCode": "\nconst item = $input.first();\nconst origem = $('Start Storage').first();\n\n// A SP retorna os dados como array dentro do JSON.\nconst dados = item.json;\nconst reserva = Array.isArray(dados)\n  ? dados[0]\n  : Array.isArray(dados?.[0])\n    ? dados[0][0]\n    : dados;\n\nif (!reserva || typeof reserva !== 'object') {\n  throw new Error(\n    'Não foi possível localizar o objeto da reserva na saída da SP.'\n  );\n}\n\nconst reservaOk =\n  reserva.reserva_ok === 1 ||\n  reserva.reserva_ok === '1' ||\n  reserva.reserva_ok === true;\n\nif (!reservaOk) {\n  throw new Error(\n    `Reserva não autorizada: ${reserva.motivo || 'motivo não informado'}`\n  );\n}\n\nif (!origem.binary?.data) {\n  throw new Error(\n    'Arquivo binário original não encontrado em Start Storage.'\n  );\n}\n\nreturn [\n  {\n    json: {\n      ...reserva,\n      'ind-api-folder': origem.json['ind-api-folder'],\n      storage_folder: origem.json['ind-api-folder'],\n    },\n    binary: origem.binary,\n  },\n];\n"
+        "jsCode": "const item = $input.first();\nconst contexto = $('Prepara Tentativa').item;\nconst dados = item.json;\n\nconst reserva = Array.isArray(dados)\n  ? Array.isArray(dados[0])\n    ? dados[0][0]\n    : dados[0]\n  : dados;\n\nif (!reserva || typeof reserva !== 'object') {\n  throw new Error(\n    'Não foi possível localizar o objeto da reserva na saída da SP.'\n  );\n}\n\nif (!contexto.binary?.data) {\n  throw new Error(\n    'Binário original não encontrado em Prepara Tentativa.'\n  );\n}\n\nconst reservaOk =\n  reserva.reserva_ok === 1 ||\n  reserva.reserva_ok === '1' ||\n  reserva.reserva_ok === true;\n\nreturn [{\n  json: {\n    ...contexto.json,\n    ...reserva,\n    reserva_ok: reservaOk ? 1 : 0,\n    storage_folder:\n      contexto.json.storage_folder ??\n      contexto.json['ind-api-folder'],\n  },\n  binary: contexto.binary,\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -528,
+        -496,
         -256
       ],
       "id": "b393e507-d320-4d3a-a3e4-7c90593a2060",
@@ -97,7 +97,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -736,
+        -496,
         -32
       ],
       "id": "e32377e9-6dff-452b-9c86-34ee254e5e76",
@@ -105,13 +105,13 @@
     },
     {
       "parameters": {
-        "errorMessage": "Upload externo falhou; reserva finalizada. Consulte o node de upload."
+        "errorMessage": "={{ 'Upload externo encerrado: ' + ($json.failure_status || 'falha sem detalhe') }}"
       },
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        384,
-        320
+        896,
+        544
       ],
       "id": "ffccd5ff-87a2-4c60-a185-ddd67e5cd829",
       "name": "Stop and Error"
@@ -123,7 +123,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        192,
+        432,
         112
       ],
       "id": "04a04d55-5de8-41b5-b36a-e795d1362d42",
@@ -141,7 +141,7 @@
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        0,
+        240,
         112
       ],
       "id": "6500ef30-9390-44a9-bb72-ce15710bcef2",
@@ -153,13 +153,13 @@
         "operation": "executeQuery",
         "query": "CALL SP_Core_Storage_Finaliza($1, $2, $3, $4, $5);",
         "options": {
-          "queryReplacement": "={{ [\n  $('SHA-256 + Metadados').item.json.storage_id,\n  $('SHA-256 + Metadados').item.json.reservation_token,\n  0,\n  'Falha no upload; verificar erro HTTP',\n  0\n] }}"
+          "queryReplacement": "={{ [\n  $json.storage_id,\n  $json.reservation_token,\n  0,\n  $json.failure_status,\n  $json.bloqueio_minutos\n] }}"
         }
       },
       "type": "n8n-nodes-base.mySql",
       "typeVersion": 2.5,
       "position": [
-        0,
+        240,
         320
       ],
       "id": "dd7d95af-dde0-47ae-92e8-ecd9e334fb98",
@@ -168,12 +168,12 @@
     },
     {
       "parameters": {
-        "jsCode": "const dados = $input.first().json;\n\nconst resultado = Array.isArray(dados)\n  ? Array.isArray(dados[0])\n    ? dados[0][0]\n    : dados[0]\n  : dados;\n\nif (Number(resultado?.finalizacao_ok) !== 1) {\n  throw new Error(\n    `Finalização não confirmada: ${\n      resultado?.motivo || 'retorno inválido da SP'\n    }`\n  );\n}\n\nreturn [{\n  json: resultado,\n}];"
+        "jsCode": "const dados = $input.first().json;\n\nconst resultado = Array.isArray(dados)\n  ? Array.isArray(dados[0])\n    ? dados[0][0]\n    : dados[0]\n  : dados;\n\nif (Number(resultado?.finalizacao_ok) !== 1) {\n  throw new Error(\n    `Finalização não confirmada: ${\n      resultado?.motivo || 'retorno inválido da SP'\n    }`\n  );\n}\n\nconst contexto = $('Classifica Falha Upload').item;\n\nif (Number(resultado.storage_id) !== Number(contexto.json.storage_id)) {\n  throw new Error('Finalização não corresponde ao storage da tentativa.');\n}\n\nconst {\n  reservation_token,\n  dsc_api_key,\n  dsc_api_secret,\n  AUTHORIZATION,\n  ...seguro\n} = contexto.json;\n\nreturn [{\n  json: {\n    ...seguro,\n    finalizacao_falha_ok: true,\n    finalizacao_falha_motivo: resultado.motivo,\n  },\n  binary: contexto.binary,\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        192,
+        432,
         320
       ],
       "id": "96fe2779-4cfb-439c-b6b9-fb17efa3441b",
@@ -236,12 +236,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -528,
+        -288,
         -32
       ],
       "id": "d1ea75db-f2f5-4fec-a899-8c6560862bdc",
       "name": "Upload Cloudinary - Proxy",
-      "retryOnFail": true,
+      "retryOnFail": false,
       "maxTries": 2,
       "waitBetweenTries": 5000,
       "alwaysOutputData": false,
@@ -296,12 +296,12 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -736,
+        -496,
         128
       ],
       "id": "4e422655-b9e4-47ef-9124-558c3e5131e6",
       "name": "Upload S3R2 - Proxy",
-      "retryOnFail": true,
+      "retryOnFail": false,
       "maxTries": 2,
       "waitBetweenTries": 5000,
       "onError": "continueErrorOutput"
@@ -386,12 +386,14 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "fallbackOutput": "extra"
+        }
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -992,
+        -752,
         112
       ],
       "id": "ec526c4b-5943-438d-8137-2472e662346e",
@@ -446,15 +448,146 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -736,
+        -496,
         304
       ],
       "id": "78a0d0b0-aefe-4061-9082-43024934bc1a",
       "name": "Upload S3B2 - Proxy",
-      "retryOnFail": true,
+      "retryOnFail": false,
       "maxTries": 2,
       "waitBetweenTries": 5000,
       "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst entrada = item.json ?? {};\n\nif (!item.binary?.data) {\n  throw new Error('Binário original ausente ao preparar tentativa.');\n}\n\nconst anterior = entrada.retry_context ?? {};\nconst tentativaAnterior = Number(anterior.tentativa ?? 0);\nconst maxTentativas = 3;\n\nif (!Number.isInteger(tentativaAnterior) || tentativaAnterior < 0) {\n  throw new Error('Contador de tentativas inválido.');\n}\n\nconst tentativa = tentativaAnterior + 1;\nif (tentativa > maxTentativas) {\n  throw new Error('Limite de três tentativas excedido.');\n}\n\nconst storageIdsTentados = [...new Set(\n  (Array.isArray(anterior.storage_ids_tentados)\n    ? anterior.storage_ids_tentados\n    : [])\n    .map(Number)\n    .filter(Number.isInteger)\n)];\n\n// Remove dados da reserva anterior; a próxima SP deve fornecer um contexto novo.\nconst {\n  storage_id,\n  provider,\n  storage_driver,\n  storage_alias,\n  account_email,\n  endpoint_url,\n  public_base_url,\n  bucket_name,\n  region_name,\n  credential_ref,\n  prioridade,\n  ind_ativo,\n  dsc_status,\n  dth_acesso,\n  dth_bloqueio_ate,\n  reservation_token,\n  dth_reserva_ate,\n  num_count,\n  credential_id,\n  dsc_api_key,\n  dsc_api_secret,\n  AUTHORIZATION,\n  cloudinary_cloud,\n  cloudinary_public_id,\n  error,\n  failure_code,\n  failure_class,\n  failure_http_status,\n  failure_upstream_status,\n  failure_status,\n  bloqueio_minutos,\n  pode_tentar_novamente,\n  ...base\n} = entrada;\n\nreturn [{\n  json: {\n    ...base,\n    retry_context: {\n      tentativa,\n      max_tentativas: maxTentativas,\n      storage_ids_tentados: storageIdsTentados,\n      ultima_falha: anterior.ultima_falha ?? null,\n    },\n  },\n  binary: item.binary,\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        -256
+      ],
+      "id": "c33bfd73-1066-4abe-bac8-83dec271c201",
+      "name": "Prepara Tentativa"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ \n  'Reserva indisponível: ' +\n  String($json.motivo || 'nenhum_storage_disponivel') +\n  '; tentativa ' +\n  String($json.retry_context?.tentativa ?? '?') +\n  '/' +\n  String($json.retry_context?.max_tentativas ?? 3)\n}}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        400
+      ],
+      "id": "fbdc26c0-f9a3-47ea-bb64-ca08dbc8a358",
+      "name": "Stop | Sem Storage Disponível"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{\n  'Provider não suportado: ' +\n  String($json.provider || 'ausente') +\n  '; storage_id=' +\n  String($json.storage_id ?? 'ausente') +\n  '; tentativa ' +\n  String($json.retry_context?.tentativa ?? '?') +\n  '/' +\n  String($json.retry_context?.max_tentativas ?? 3)\n}}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        512
+      ],
+      "id": "654295c7-4bbb-41f3-b7ab-a714cc952ab5",
+      "name": "Stop | Provider Não Suportado"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst entrada = item.json ?? {};\nconst erro = entrada.error ?? {};\n\nfunction parseJsonRecursivo(value) {\n  let atual = value;\n\n  for (let i = 0; i < 3; i++) {\n    if (atual && typeof atual === 'object') return atual;\n    if (typeof atual !== 'string') return null;\n\n    const texto = atual.trim();\n\n    try {\n      atual = JSON.parse(texto);\n      continue;\n    } catch {}\n\n    const aposStatus = texto.replace(/^\\s*\\d{3}\\s*-\\s*/, '');\n\n    if (aposStatus !== texto) {\n      try {\n        atual = JSON.parse(aposStatus);\n        continue;\n      } catch {}\n    }\n\n    return null;\n  }\n\n  return atual && typeof atual === 'object' ? atual : null;\n}\n\nconst corpo =\n  parseJsonRecursivo(erro.response?.body) ??\n  parseJsonRecursivo(erro.response?.data) ??\n  parseJsonRecursivo(erro.message) ??\n  {};\n\nconst statusPelaMensagem = String(erro.message ?? '').match(/^\\s*(\\d{3})\\b/);\n\nconst httpStatus = Number(\n  erro.status ??\n  erro.response?.status ??\n  statusPelaMensagem?.[1] ??\n  0\n);\n\nconst upstreamStatus = Number(corpo.upstream_status ?? 0);\n\nconst failureCode = String(\n  corpo.error ??\n  erro.code ??\n  'upload_error_unknown'\n).slice(0, 80);\n\nconst inputErrors = new Set([\n  'invalid_media_metadata',\n  'file_too_large',\n  'empty_file',\n  'invalid_image_signature',\n  'sha256_mismatch',\n  'existing_object_size_mismatch',\n]);\n\nconst storageConfigurationErrors = new Set([\n  'unauthorized',\n  'missing_configuration',\n  'route_not_found',\n  'invalid_endpoint',\n  'invalid_public_base',\n]);\n\nconst ambiguousCodes = new Set([\n  'b2_upload_failed',\n  'ETIMEDOUT',\n  'ECONNRESET',\n  'ECONNABORTED',\n  'EPIPE',\n]);\n\nlet failureClass = 'desconhecida';\nlet retryable = false;\nlet bloqueioMinutos = 0;\n\nif (inputErrors.has(failureCode) || httpStatus === 413) {\n  failureClass = 'entrada_invalida';\n} else if (\n  storageConfigurationErrors.has(failureCode) ||\n  [401, 403, 404].includes(httpStatus)\n) {\n  failureClass = 'configuracao_storage';\n  retryable = true;\n  bloqueioMinutos = 60;\n} else if (ambiguousCodes.has(failureCode)) {\n  failureClass = 'escrita_ambigua';\n  retryable = true;\n  bloqueioMinutos = 5;\n} else if (\n  [408, 425, 429].includes(httpStatus) ||\n  httpStatus >= 500 ||\n  upstreamStatus >= 500 ||\n  corpo.retryable === true\n) {\n  failureClass = 'falha_transitoria';\n  retryable = true;\n  bloqueioMinutos = 5;\n}\n\nconst retryContext = entrada.retry_context ?? {};\nconst tentativa = Number(retryContext.tentativa ?? 1);\nconst maxTentativas = Number(retryContext.max_tentativas ?? 3);\nconst storageId = Number(entrada.storage_id);\n\nconst storageIdsTentados = [...new Set([\n  ...(Array.isArray(retryContext.storage_ids_tentados)\n    ? retryContext.storage_ids_tentados\n    : []),\n  storageId,\n].map(Number).filter(Number.isInteger))];\n\nconst podeTentarNovamente =\n  retryable &&\n  Number.isInteger(tentativa) &&\n  tentativa < maxTentativas;\n\nconst resumo = [\n  failureCode,\n  httpStatus ? `http=${httpStatus}` : null,\n  upstreamStatus ? `upstream=${upstreamStatus}` : null,\n  `tentativa=${tentativa}/${maxTentativas}`,\n].filter(Boolean).join('; ');\n\nconst origem = item.binary?.data\n  ? item\n  : $('SHA-256 + Metadados').item;\n\nif (!origem.binary?.data) {\n  throw new Error('Binário original indisponível para o fallback.');\n}\n\nconst {\n  error,\n  account_email,\n  credential_ref,\n  dsc_api_key,\n  dsc_api_secret,\n  AUTHORIZATION,\n  ...seguro\n} = {\n  ...origem.json,\n  ...entrada,\n};\n\nreturn [{\n  json: {\n    ...seguro,\n    failure_code: failureCode,\n    failure_class: failureClass,\n    failure_http_status: httpStatus || null,\n    failure_upstream_status: upstreamStatus || null,\n    failure_status: `Falha upload: ${resumo}`.slice(0, 255),\n    bloqueio_minutos: bloqueioMinutos,\n    pode_tentar_novamente: podeTentarNovamente,\n    retry_context: {\n      tentativa,\n      max_tentativas: maxTentativas,\n      storage_ids_tentados: storageIdsTentados,\n      ultima_falha: {\n        code: failureCode,\n        class: failureClass,\n        http_status: httpStatus || null,\n        upstream_status: upstreamStatus || null,\n      },\n    },\n  },\n  binary: origem.binary,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        320
+      ],
+      "id": "582676a8-3896-428e-9953-50006bc4d83a",
+      "name": "Classifica Falha Upload",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4b31bd6c-4286-4241-bbd7-c8e87ce18241",
+              "leftValue": "={{ $json.pode_tentar_novamente }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        528
+      ],
+      "id": "0fd6cab8-0c5b-4124-9f93-8328f90ae9b0",
+      "name": "IF | Pode tentar novamente?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const entrada = $input.first().json ?? {};\nconst retry = entrada.retry_context ?? {};\n\nconst limpar = (valor, limite = 120) =>\n  String(valor ?? 'não informado')\n    .replace(/[\\r\\n\\t]+/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .slice(0, limite);\n\nconst tentativa = Number(retry.tentativa ?? 1);\nconst maxTentativas = Number(retry.max_tentativas ?? 3);\n\nconst provider = limpar(entrada.provider, 80);\nconst storageAlias = limpar(entrada.storage_alias, 80);\n\nconst storageId = Number.isInteger(Number(entrada.storage_id))\n  ? Number(entrada.storage_id)\n  : null;\n\nconst failureCode = limpar(\n  entrada.failure_code ?? 'upload_error_unknown',\n  80\n);\n\nconst failureClass = limpar(\n  entrada.failure_class ?? 'falha_desconhecida',\n  80\n);\n\nconst httpStatus = Number(\n  entrada.failure_http_status ?? 0\n) || null;\n\nconst upstreamStatus = Number(\n  entrada.failure_upstream_status ?? 0\n) || null;\n\nconst bloqueioMinutos = Number(\n  entrada.bloqueio_minutos ?? 0\n);\n\nconst podeTentarNovamente =\n  entrada.pode_tentar_novamente === true;\n\nconst status = limpar(\n  entrada.failure_status ??\n  'Falha de upload sem detalhe',\n  255\n);\n\nconst alertSubject =\n  `[Core360][HML] Falha de upload - tentativa ` +\n  `${tentativa}/${maxTentativas}`;\n\nconst alertText = [\n  'Falha detectada no fluxo de storage externo.',\n  'A reserva correspondente foi finalizada antes deste alerta.',\n  '',\n  `Data UTC: ${new Date().toISOString()}`,\n  `Provider: ${provider}`,\n  `Storage ID: ${storageId ?? 'não informado'}`,\n  `Storage alias: ${storageAlias}`,\n  `Classe: ${failureClass}`,\n  `Código: ${failureCode}`,\n  `HTTP: ${httpStatus ?? 'não informado'}`,\n  `Upstream: ${upstreamStatus ?? 'não informado'}`,\n  `Tentativa: ${tentativa}/${maxTentativas}`,\n  `Nova tentativa prevista: ${\n    podeTentarNovamente ? 'sim' : 'não'\n  }`,\n  `Cooldown: ${bloqueioMinutos} minuto(s)`,\n  `Status: ${status}`,\n  '',\n  'Ação: consultar a execução correspondente no n8n.',\n].join('\\n');\n\nreturn [{\n  json: {\n    alert_subject: alertSubject,\n    alert_text: alertText,\n    provider,\n    storage_id: storageId,\n    storage_alias: storageAlias,\n    failure_class: failureClass,\n    failure_code: failureCode,\n    failure_http_status: httpStatus,\n    failure_upstream_status: upstreamStatus,\n    tentativa,\n    max_tentativas: maxTentativas,\n    pode_tentar_novamente: podeTentarNovamente,\n    bloqueio_minutos: bloqueioMinutos,\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        320
+      ],
+      "id": "b1d48abf-cb3e-4d39-8a29-1fac04c8111e",
+      "name": "Prepara Alerta Falha"
+    },
+    {
+      "parameters": {
+        "sendTo": "RECONFIGURE_ALERT_RECIPIENT",
+        "subject": "={{ $json.alert_subject }}",
+        "message": "={{ $json.alert_text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        528
+      ],
+      "id": "a513f920-8a9f-4105-a15b-4bde90cae929",
+      "name": "Send E-Mail",
+      "webhookId": "182adcc2-1d78-44c2-803c-94099f945dca",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const contexto =\n  $('Valida Finalização Falha').item;\n\nif (!contexto?.json) {\n  throw new Error(\n    'Contexto da falha indisponível após o alerta.'\n  );\n}\n\nif (!contexto.binary?.data) {\n  throw new Error(\n    'Binário indisponível após o alerta de falha.'\n  );\n}\n\nreturn [{\n  json: contexto.json,\n  binary: contexto.binary,\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        528
+      ],
+      "id": "fe1f5b14-4033-4675-94a6-7221f4c40859",
+      "name": "Restaura Contexto Após Alerta"
     }
   ],
   "connections": {
@@ -462,7 +595,7 @@
       "main": [
         [
           {
-            "node": "SP - Storage Provider Reserva",
+            "node": "Prepara Tentativa",
             "type": "main",
             "index": 0
           }
@@ -485,6 +618,13 @@
         [
           {
             "node": "SHA-256 + Metadados",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop | Sem Storage Disponível",
             "type": "main",
             "index": 0
           }
@@ -550,7 +690,7 @@
       "main": [
         [
           {
-            "node": "Stop and Error",
+            "node": "Prepara Alerta Falha",
             "type": "main",
             "index": 0
           }
@@ -568,7 +708,7 @@
         ],
         [
           {
-            "node": "Finaliza Falha",
+            "node": "Classifica Falha Upload",
             "type": "main",
             "index": 0
           }
@@ -586,7 +726,7 @@
         ],
         [
           {
-            "node": "Finaliza Falha",
+            "node": "Classifica Falha Upload",
             "type": "main",
             "index": 0
           }
@@ -615,6 +755,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Stop | Provider Não Suportado",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -629,7 +776,87 @@
         ],
         [
           {
+            "node": "Classifica Falha Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara Tentativa": {
+      "main": [
+        [
+          {
+            "node": "SP - Storage Provider Reserva",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classifica Falha Upload": {
+      "main": [
+        [
+          {
             "node": "Finaliza Falha",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF | Pode tentar novamente?": {
+      "main": [
+        [
+          {
+            "node": "Prepara Tentativa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepara Alerta Falha": {
+      "main": [
+        [
+          {
+            "node": "Send E-Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send E-Mail": {
+      "main": [
+        [
+          {
+            "node": "Restaura Contexto Após Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Restaura Contexto Após Alerta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaura Contexto Após Alerta": {
+      "main": [
+        [
+          {
+            "node": "IF | Pode tentar novamente?",
             "type": "main",
             "index": 0
           }

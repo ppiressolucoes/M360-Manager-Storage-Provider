@@ -1,6 +1,6 @@
 # Retry v1 — candidato para homologação
 
-Este pacote foi preparado após a primeira falha real sanitizada de upload em B2-01, em 23/10/2026. Não foi importado nem executado no n8n. O export `../SUB_Storage_Media_External.json` continua sendo o baseline sanitizado anterior e não deve ser apresentado como se já contivesse retry.
+Este pacote foi preparado após a primeira falha real sanitizada de upload em B2-01, em 23/10/2026. A versão 0.4 foi publicada no n8n e o export `../SUB_Storage_Media_External.json` contém seu snapshot sanitizado auditado. O caminho de sucesso foi homologado; retry e alerta aguardam observação em falha real.
 
 ## Comportamento
 
@@ -32,8 +32,10 @@ Aplicar passo a passo em uma cópia inativa do workflow:
 CALL SP_Core_Storage_Finaliza($1, $2, $3, $4, $5);
 ```
 
+No editor visual do n8n, colocar o campo em modo **Expression** e inserir sem `=` manual:
+
 ```javascript
-={{ [
+{{ [
   $json.storage_id,
   $json.reservation_token,
   0,
@@ -41,6 +43,8 @@ CALL SP_Core_Storage_Finaliza($1, $2, $3, $4, $5);
   $json.bloqueio_minutos
 ] }}
 ```
+
+O export JSON serializa essa expressão com um único prefixo `={{`. Digitar `=` no editor visual gera `=={{` no export e erro de avaliação.
 
 7. Substituir **Valida Finalização Falha** por `nodes/valida-finalizacao-falha-retry.js`.
 8. Adicionar um IF após essa validação: `{{ $json.pode_tentar_novamente === true }}`.
@@ -69,10 +73,38 @@ Classifica Falha -> Finaliza Falha -> Valida Finalização -> IF retry -- true -
 
 ## Limite da evidência atual
 
-A falha observada retornou HTTP 502 do Worker, código `b2_upload_failed` e status upstream 520. Isso comprova uma resposta ambígua do PUT, não a causa raiz no B2 nem a ausência do objeto. O código deste pacote foi validado localmente, mas implantação e homologação permanecem pendentes.
+A falha observada retornou HTTP 502 do Worker, código `b2_upload_failed` e status upstream 520. Isso comprova uma resposta ambígua do PUT, não a causa raiz no B2 nem a ausência do objeto. A revisão reconciliadora foi implantada pelo usuário nos dois Workers e seus endpoints `/health` foram validados. A versão 0.4 do n8n está publicada e os testes automatizados locais estão concluídos; observação da primeira falha real, rotação dos segredos expostos e Error Workflow global permanecem pendentes.
 
 ## Progresso informado
 
-- 23/10/2026: node **Prepara Tentativa** criado pelo usuário no n8n;
-- pendente antes do próximo node: confirmar `tentativa=1`, `max_tentativas=3`, lista vazia de storages tentados e presença de `binary.data`;
+- 23/10/2026: node **Prepara Tentativa** criado e validado pelo usuário no n8n, com `tentativa=1`, `max_tentativas=3`, lista vazia de storages tentados e `binary.data` presente;
+- 23/10/2026: **Normaliza** validado com contexto da tentativa e `binary.data` preservados; a seleção global retornou um storage Cloudflare R2, confirmando que o fluxo não está fixado em B2;
+- 23/10/2026: saída verdadeira de **IF | Reserva OK?** processada pelo usuário;
+- 23/10/2026: saída falsa conectada a **Stop | Sem Storage Disponível**;
+- 23/10/2026: JSON de **SHA-256 + Metadados** validado com hash, MIME, bytes, dimensões e contexto da tentativa preservados;
+- 23/10/2026: `binary.data` confirmado na saída de **SHA-256 + Metadados**;
+- 23/10/2026: desenho atualizado com as três regras e saída extra `Fallback` no **SWITCH | Storage Provider**;
+- 23/10/2026: Switch executado com reserva Cloudflare R2 e item encaminhado corretamente pela saída `S3`;
+- 23/10/2026: `binary.data` confirmado na saída `S3` do Switch;
+- 23/10/2026: Code node comum **Classifica Falha Upload** criado e as saídas de erro dos uploads direcionadas a ele;
+- 23/10/2026: `Retry on Fail` desabilitado nos três uploads; o limite de tentativas passa a ser controlado pelo workflow;
+- 23/10/2026: **Classifica Falha Upload** ligado a **Finaliza Falha**, que passou a enviar status classificado e cooldown à SP;
+- 23/10/2026: código de **Valida Finalização Falha** atualizado e IF de decisão do retry posicionado;
+- 23/10/2026: IF configurado, com `true` retornando a **Prepara Tentativa**, `false` encerrando, e topologia completa revisada visualmente;
+- 23/10/2026: aviso visual em **Prepara Tentativa** confirmado como alerta de reexecução após múltiplas mudanças ainda não publicadas, sem erro estrutural;
+- 23/10/2026: revisão reconciliadora informada como implantada em B2-01 (`flow-b2-storage-proxy-hml`); a consulta externa de `/health` pelo ambiente Codex foi bloqueada pelo proxy antes de alcançar o Worker;
+- 23/10/2026: `/health` de B2-01 validado pelo painel Cloudflare, com HTTP saudável, `provider=backblaze_b2`, `configured=true` e sem teste de escrita;
+- 23/10/2026: mesma revisão implantada em B2-02 (`flow-b2-02-storage-proxy-hml`) e `/health` validado com `provider=backblaze_b2`, `configured=true` e sem teste de escrita;
+- 23/10/2026: export atualizado auditado; topologia e códigos estão coerentes, sem `pinData`, mas foram encontrados três headers `X-Proxy-Key` literais e dois campos com prefixo inválido `=={{` (`Finaliza Falha` e `Stop | Provider Não Suportado`);
+- 23/10/2026: usuário corrigiu as expressões e padronizou o IF; confirmado que a UI Expression recebe `{{...}}` sem `=` manual, enquanto o export válido serializa `={{...}}`;
+- 23/10/2026: export v0.2 auditado, sanitizado e promovido ao snapshot canônico local; `active=false`, sem `pinData`, credenciais da instância ou headers secretos, com sete Code nodes extraídos e indexados;
+- 23/10/2026: auditoria confirmou, sem registrar o valor, que Cloudinary, R2 e B2 usam a mesma `X-Proxy-Key`; a rotação precisa abranger todos os proxies consumidores e o n8n;
+- 23/10/2026: caminho de sucesso homologado manualmente no rascunho com reserva global, seleção Cloudflare R2, objeto novo (`existing=false`), finalização confirmada e saída validada; hash, URL, nome e binário não foram versionados;
+- 23/10/2026: decisão operacional revisada: não provocar falhas; observar chamadas reais e enviar alerta por e-mail para cada falha de upload finalizada, inclusive quando houver retry, sem alertar o caminho de sucesso;
+- 23/10/2026: ramificação lateral **Prepara Alerta Falha → Send E-Mail** configurada pelo usuário após **Valida Finalização Falha**, preservando o caminho principal para o IF de retry;
+- decisão de validação: não enviar e-mail de teste nem provocar falha; analisar a primeira ocorrência real;
+- 23/10/2026: versão 0.3 publicada e exportada, mas a auditoria encontrou `pinData` em **Start Storage**, alerta ligado apenas à saída `true` do IF, falha terminal sem alerta e saída de erro do Gmail sem continuidade; v0.3 não foi promovido ao snapshot canônico;
+- 23/10/2026: versão 0.4 corrigida e publicada; sem `pinData`, alerta antes do IF, saídas de sucesso/erro do Gmail convergindo em **Restaura Contexto Após Alerta**, contexto/binário preservados e export final sanitizado;
+- 23/10/2026: snapshot v0.4 validado com 23 nodes, nove Code nodes indexados, seis artefatos do retry e testes automatizados aprovados;
+- próximo passo operacional: observar a primeira falha real e analisar o e-mail; rotacionar a chave compartilhada e criar Error Workflow para falhas não tratadas;
 - códigos implantados de B2-01 e B2-02 preservados e comparados; ambos correspondem ao baseline pré-reconciliação.

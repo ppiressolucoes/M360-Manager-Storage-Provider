@@ -9,18 +9,30 @@
     "node": "Normaliza",
     "file": "normaliza-reserva-retry.js",
     "mode": "runOnceForAllItems",
-    "sha256": "c4fab646a8f95ede6f9d8bea162091f14a58509f92e6e4de12d0ce4e9ed9ec6c"
+    "sha256": "46051e4f93889eae5db388b1aa6fa6ef3777dff97ed9c838589c9874526671dd"
   },
   {
     "node": "Classifica Falha Upload",
     "file": "classifica-falha-upload.js",
     "mode": "runOnceForAllItems",
-    "sha256": "a8289b48772306937845f8bde134ced491d7a5069ae1071621d82e145b0b7171"
+    "sha256": "6c68770dc3c6b33d2701f1be9bfa1f8fc4b4aeea78c8222df3a81b76737e1b6f"
   },
   {
     "node": "Valida Finalização Falha",
     "file": "valida-finalizacao-falha-retry.js",
     "mode": "runOnceForAllItems",
-    "sha256": "26d04457478840d2b329723913e8b1f9e13aff2ec50000a799f8e3c1773cabf0"
+    "sha256": "2a5c936d6e51d065b12a204d9961909be7b270a0742bccb7f83e8230b158fa93"
+  },
+  {
+    "node": "Prepara Alerta Falha",
+    "file": "prepara-alerta-falha.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "ae792753012fd57c535e8dc0b3e7921144f52f466ef64fe8c7859ec4038fccf4"
+  },
+  {
+    "node": "Restaura Contexto Após Alerta",
+    "file": "restaura-contexto-apos-alerta.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "471a16447b89f3d68466e29bc50f5657f13b18c3ef25b2dbb3b03cfdbd67c824"
   }
 ]
