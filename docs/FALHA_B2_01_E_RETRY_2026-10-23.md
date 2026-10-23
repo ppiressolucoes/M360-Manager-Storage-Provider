@@ -64,6 +64,8 @@ Correção escolhida para B2-02: criar um novo Application Key sem revogar o ant
 
 Após a rotação coordenada dos dois secrets, o health autenticado de B2-02 passou a retornar HTTP 200, `probe_status=404` e `bucket_read_verified=true`. O contraste antes/depois confirma a Application Key/configuração anterior como causa operacional do 403 em B2-02. A nova chave permanece candidata até passar por PUT, deduplicação e entrega pública; a chave anterior continua disponível para rollback durante esses gates.
 
+O upload controlado seguinte no Worker B2-02 criou um objeto novo com `existing=false` e `reconciled_after_put_error=false`. O PUT foi aprovado sem fallback ou reconciliação, comprovando a capability de escrita da nova Application Key. Hash, URL, nome e metadados específicos do arquivo não foram versionados. A chave anterior permanece disponível até concluir deduplicação e entrega pública.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
