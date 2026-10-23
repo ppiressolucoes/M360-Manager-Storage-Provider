@@ -15,7 +15,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
 | P1 | Baseline operacional | Artefatos públicos não equivalem integralmente ao runtime | Recuperar export atual, Code nodes, Worker R2 e `SHOW CREATE PROCEDURE` |
-| P2 | Retry de até três tentativas | Aprovado, não implantado/homologado | Preparar máquina de estados; implementar a partir da primeira falha real sanitizada |
+| P2 | Retry de até três tentativas | Primeira falha real sanitizada observada; candidato local preparado, não implantado | Implantar primeiro reconciliação do Worker; montar cópia inativa do n8n e homologar |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
 | P4 | Entrega R2 de produção | URLs `r2.dev` usadas em homologação | Planejar domínio/CDN, compatibilidade e rollback |
 | Aguardar | OCI | Apenas sugestão | Reavaliar somente se priorizado |
@@ -32,7 +32,7 @@ Critérios de aceite, dependências e limites estão no [plano de evolução de 
 
 ## Próxima retomada de falha
 
-Classificar erro sanitizado; finalizar e validar reserva antes de nova; preservar binário/contexto e limitar tentativas. Bloqueio 0 não impede repetição da conta; timeout pode ter escrito objeto. Falha de finalização e tentativas esgotadas encerram com erro. Não afirmar que laço ou Contexto da Tentativa já existem.
+O gatilho ocorreu em B2-01 em 23/10: `b2_upload_failed`, HTTP 502 e upstream 520. A evidência e o candidato estão em [Falha B2-01 e preparação do retry](FALHA_B2_01_E_RETRY_2026-10-23.md). Classificar erro sanitizado; finalizar e validar reserva antes de nova; preservar binário/contexto e limitar tentativas. Cooldown temporário impede repetição imediata da conta. Timeout ou resposta ambígua pode ter escrito objeto e deve ser reconciliado. Falha de finalização e tentativas esgotadas encerram com erro. Os artefatos locais não provam implantação do laço.
 
 ## Monitoramento
 

@@ -1,0 +1,26 @@
+[
+  {
+    "node": "Prepara Tentativa",
+    "file": "prepara-tentativa.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "b4e4c84ca3ac2828f020fe22cb4f2cc7d3c001450f5a3472a833e0d0f2a5d1df"
+  },
+  {
+    "node": "Normaliza",
+    "file": "normaliza-reserva-retry.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "c4fab646a8f95ede6f9d8bea162091f14a58509f92e6e4de12d0ce4e9ed9ec6c"
+  },
+  {
+    "node": "Classifica Falha Upload",
+    "file": "classifica-falha-upload.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "a8289b48772306937845f8bde134ced491d7a5069ae1071621d82e145b0b7171"
+  },
+  {
+    "node": "Valida Finalização Falha",
+    "file": "valida-finalizacao-falha-retry.js",
+    "mode": "runOnceForAllItems",
+    "sha256": "26d04457478840d2b329723913e8b1f9e13aff2ec50000a799f8e3c1773cabf0"
+  }
+]

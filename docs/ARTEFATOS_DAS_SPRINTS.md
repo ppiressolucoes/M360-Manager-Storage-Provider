@@ -9,7 +9,8 @@
 | Gestão Cloudinary | workflows/n8n/cloudinary-gestao-contas/CORE_Cloudinary_Gestao_de_Contas.json | Anexo 14/10 sanitizado; não reimportado/testado |
 | Code nodes gestão | workflows/n8n/cloudinary-gestao-contas/nodes/ | Extração fiel do export sanitizado |
 | Procedures MySQL | database/mysql/procedures/ | Reconstrução da versão completa fornecida no chat UTC−3; não dump da produção |
-| Worker B2 | workers/flow-b2-storage-proxy-hml.mjs | Fonte preparada aqui, implantação e testes reais relatados pelo usuário |
+| Worker B2 | workers/flow-b2-storage-proxy-hml.mjs | Fonte atual inclui reconciliação candidata ainda não implantada; versão anterior teve implantação/testes reais relatados pelo usuário |
+| Retry n8n v1 | workflows/n8n/storage-media-external/retry-v1/ | Candidato preparado após falha real de 23/10; não importado/homologado |
 | Plugin WordPress | plugin/wordpress/m360-core-media-storage-external/ | Baseline existente e release 0.1.9, preservados |
 
 ## Registro de entregas
@@ -18,6 +19,7 @@
 - 15–20/10: R2-03/R2-04 publicados; R2-05/R2-06 testes isolados e cadastro. Monitoramento solicitado, sem implantação. Atualização de continuidade em 20/10 reúne os artefatos disponíveis; datas dos arquivos não provam execução.
 - 21/10: R2-07 com testes isolados, cadastro inativo confirmado e ativação preparada; publicação integrada permanece pendente.
 - 23/10: backlog recuperado e plano de evolução consolidado em `docs/PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md`. A rodada foi documental: nenhuma ativação, importação n8n, procedure ou chamada a runtime operacional foi executada.
+- 23/10: primeira falha real sanitizada do B2-01 analisada; reconciliação do Worker e pacote retry v1 preparados e testados localmente. Nenhuma implantação no Worker/n8n foi executada pelo agente.
 
 ## Regras
 

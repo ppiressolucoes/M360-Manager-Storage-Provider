@@ -98,20 +98,55 @@ async function upload(request, env) {
   if (await digest(bytes) !== sha) return json({ error: 'sha256_mismatch' }, 400);
 
   const previous = await s3(env, 'HEAD', key);
-  const existing = previous.status === 200;
+  let existing = previous.status === 200;
   if (!existing && previous.status !== 404) {
+    await previous.body?.cancel();
     return json({ error: 'b2_lookup_failed', upstream_status: previous.status }, 502);
   }
   if (existing && Number(previous.headers.get('content-length')) !== size) {
+    await previous.body?.cancel();
     return json({ error: 'existing_object_size_mismatch' }, 409);
   }
+  await previous.body?.cancel();
+
+  let reconciledAfterPutError = false;
   if (!existing) {
     const saved = await s3(env, 'PUT', key, bytes, {
       'content-type': mime,
       'cache-control': 'public, max-age=31536000, immutable',
     });
-    if (!saved.ok) return json({ error: 'b2_upload_failed', upstream_status: saved.status }, 502);
+    const putStatus = saved.status;
     await saved.body?.cancel();
+
+    if (!saved.ok) {
+      // A falha da resposta do PUT não prova que o B2 deixou de persistir o objeto.
+      // Reconcilia a chave content-addressed antes de autorizar fallback no n8n.
+      const verification = await s3(env, 'HEAD', key);
+      const verificationStatus = verification.status;
+      const verificationSize = Number(verification.headers.get('content-length'));
+      await verification.body?.cancel();
+
+      if (verificationStatus === 200 && verificationSize === size) {
+        existing = true;
+        reconciledAfterPutError = true;
+      } else if (verificationStatus === 200) {
+        return json({
+          error: 'existing_object_size_mismatch',
+          upstream_status: putStatus,
+          reconciliation_status: verificationStatus,
+          retryable: false,
+          write_state: 'size_mismatch',
+        }, 409);
+      } else {
+        return json({
+          error: 'b2_upload_failed',
+          upstream_status: putStatus,
+          reconciliation_status: verificationStatus,
+          retryable: true,
+          write_state: verificationStatus === 404 ? 'not_found' : 'unknown',
+        }, 502);
+      }
+    }
   }
   const base = new URL(env.PUBLIC_BASE_URL);
   if (base.protocol !== 'https:' || base.pathname !== '/' || base.search || base.hash) throw new Error('invalid_public_base');
@@ -121,6 +156,7 @@ async function upload(request, env) {
     public_id: `${folder}/${sha}`, object_key: key,
     secure_url: url, url, width, height, mime_type: mime, bytes: size, existing,
     original_filename: (request.headers.get('x-original-filename') ?? '').trim(),
+    reconciled_after_put_error: reconciledAfterPutError,
   });
 }
 

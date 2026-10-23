@@ -2,6 +2,8 @@
 
 Arquivo para colar no editor Cloudflare: `flow-b2-storage-proxy-hml.mjs` (Worker Module, sem dependências).
 
+Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. A alteração e os testes locais estão versionados, mas a implantação no Worker permanece pendente de confirmação.
+
 Worker: `flow-b2-storage-proxy-hml.core360.workers.dev`.
 Bucket privado confirmado pelo usuário: `core360-storage-b2-hml`.
 Endpoint: `https://s3.us-east-005.backblazeb2.com`; região `us-east-005`.
@@ -22,7 +24,7 @@ Hash é recalculado pelo Worker. Dimensões são fornecidas pelo n8n e validadas
 
 Deduplicação HEAD antes de PUT; chamadas simultâneas da mesma chave ainda podem criar versões adicionais no B2. Cache público de arquivos por hash: um ano, immutable. Só imagens nos caminhos permitidos são expostas; não há listagem pública do bucket.
 
-Validação local realizada: sintaxe e simulações de autenticação inválida, rejeição de hash, upload, deduplicação sequencial e entrega pública. O agente não implantou diretamente; o usuário confirmou deployment e uploads reais nos Workers B2-01 e B2-02. Deduplicação demonstrada em ambos; leitura pública e publicação WordPress confirmadas para B2-02. Detalhes e limites no [registro atualizado](../docs/EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md).
+Validação local realizada: sintaxe e simulações de autenticação inválida, rejeição de hash, upload, deduplicação sequencial, entrega pública e reconciliação de PUT ambíguo. O agente não implantou diretamente; o usuário confirmou deployment da versão anterior e uploads reais nos Workers B2-01 e B2-02. Deduplicação demonstrada em ambos; leitura pública e publicação WordPress confirmadas para B2-02. Detalhes e limites no [registro atualizado](../docs/EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md) e no [registro da falha de 23/10](../docs/FALHA_B2_01_E_RETRY_2026-10-23.md).
 
 B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.workers.dev`, bucket `core360-02-storage-b2-hml` e secrets independentes. Não substituir a configuração de B2-01 ao criar nova conta.
 

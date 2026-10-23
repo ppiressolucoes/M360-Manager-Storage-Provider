@@ -1,6 +1,6 @@
 # Plano de evolução — Core Manager Storage Provider
 
-Atualizado em 23/10/2026, Brasília. Este plano consolida o backlog e as evidências versionadas até o commit `053d2ce`. É planejamento; não registra execução nova em MySQL, n8n, WordPress, Cloudflare ou Backblaze.
+Atualizado em 23/10/2026, Brasília. Este plano consolidou inicialmente o backlog e as evidências até o commit `053d2ce` e foi atualizado após a falha real sanitizada de B2-01. Não atribui ao agente execuções em MySQL, n8n, WordPress, Cloudflare ou Backblaze.
 
 ## Objetivo e limites
 
@@ -44,7 +44,7 @@ Critério de saída: existe um pacote sanitizado coerente de export, Code nodes,
 
 ### P2 — Projetar e homologar retry de até três tentativas
 
-Gatilho: primeira falha real do fluxo, preservada de forma sanitizada. Até esse evento, pode-se preparar a máquina de estados e os casos de teste, mas não afirmar que o retry está implantado.
+Gatilho observado em 23/10/2026: falha sanitizada de B2-01 com `b2_upload_failed`, HTTP 502 e status upstream 520. A análise e os artefatos candidatos estão em [Falha B2-01 e preparação do retry](FALHA_B2_01_E_RETRY_2026-10-23.md). Isso autoriza preparar a máquina de estados e a homologação; não significa que o retry esteja implantado.
 
 Contrato mínimo:
 
@@ -100,6 +100,6 @@ Cada avanço operacional deve registrar, sem secrets:
 
 ## Próxima sessão recomendada
 
-Começar por P0 com uma consulta sanitizada dos IDs 16, 17 e 18. Se R2-07 continuar inativo, revisar e executar conscientemente `database/mysql/inventory/activate_R2-07.sql`; depois observar a seleção natural e registrar o percurso integral. Não iniciar retry ou monitoramento em paralelo com uma homologação cujo estado real ainda seja desconhecido.
+P0 continua com uma consulta sanitizada dos IDs 16, 17 e 18. Se R2-07 continuar inativo, revisar e executar conscientemente `database/mysql/inventory/activate_R2-07.sql`; depois observar a seleção natural e registrar o percurso integral. A falha real de B2-01 permite avançar P2 de forma controlada: primeiro publicar e validar a reconciliação do Worker, depois montar o retry em uma cópia inativa do n8n. Não combinar ativação de storage e promoção do retry na mesma mudança operacional.
 
 Ao concluir cada ação, atualizar `docs/BACKLOG.md`, o documento de continuidade aplicável e `docs/ARTEFATOS_DAS_SPRINTS.md`, distinguindo preparação, execução e homologação, e então sincronizar o repositório remoto.

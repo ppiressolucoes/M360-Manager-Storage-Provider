@@ -21,6 +21,12 @@ O desenho registrado usa um único workflow e ramificações internas por provid
 
 Códigos completos dos Code nodes estão em `nodes/`, extraídos do mesmo baseline; `nodes/index.json` informa nomes, modos e hashes. Expansão posterior R2-03/R2-04 publicada e R2-05/R2-06 pendente de confirmação integrada está no [estado atual](../../../docs/INVENTARIO_E_CONTINUIDADE_2026-10-20.md). Nenhum novo export operacional foi recebido para esses cadastros, que usam endpoint dinâmico. Retry aguarda primeira falha real conforme decisão vigente.
 
+## Retry v1 preparado após falha real
+
+Em 23/10/2026, B2-01 retornou uma falha sanitizada `b2_upload_failed`, HTTP 502 e status upstream 520. Esse evento satisfaz o gatilho para projetar o retry, mas não prova causa raiz nem implantação.
+
+O candidato completo, ainda não importado/homologado, está em [`retry-v1/`](retry-v1/). Ele finaliza a reserva antes do fallback, usa cooldown para evitar o mesmo storage, preserva o binário e limita o fluxo a três tentativas totais. O export baseline desta pasta permanece inalterado até existir um novo export operacional sanitizado.
+
 Manter aqui o snapshot público com nome estável:
 
 ```text
