@@ -33,7 +33,7 @@ O health atual do Worker R2 informa proxy, versão, provider e binding, mas não
 
 ## Resultado da correção
 
-Após configurar `PUBLIC_BASE_URL` no R2-08, o upload isolado retornou sucesso com `existing=false`. A captura do painel confirmou o objeto no bucket correto, sob `m360/featured`, com o tamanho esperado. Hash, nome e URL completa não foram versionados. PUT e vínculo do Worker com `MEDIA_BUCKET` estão aprovados; leitura pública e deduplicação ainda precisam ser confirmadas.
+Após configurar `PUBLIC_BASE_URL` no R2-08, o upload isolado retornou sucesso com `existing=false`. A captura do painel confirmou o objeto no bucket correto, sob `m360/featured`, com o tamanho esperado. A URL pública foi validada sem autenticação e a repetição retornou `existing=true`. Hash, nome e URL completa não foram versionados. PUT, vínculo do Worker com `MEDIA_BUCKET`, entrega pública e deduplicação estão aprovados.
 
 ## Ajuste do retry
 

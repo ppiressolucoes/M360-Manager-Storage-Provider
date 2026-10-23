@@ -26,7 +26,7 @@ Três providers: cloudinary, cloudflare_r2, backblaze_b2. O baseline de 20/10 co
 
 Todos com provider cloudflare_r2, driver s3_compatible, prioridade inicial 100, region_name e credential_ref NULL. Cada Worker usa binding MEDIA_BUCKET ao bucket, secret PROXY_KEY padrão e variável PUBLIC_BASE_URL. Código R2 existente aplicado pelo usuário; identificação fixa de cada proxy ajustada. Health ok é declarativo, não prova escrita. Código completo R2 não foi fornecido como artefato nesta evolução.
 
-R2-08 foi acrescentado em 23/10 após health declarativo do Worker versão 1.0.0 e cadastrado como ID 19, inativo. A variável `PUBLIC_BASE_URL` ausente foi corrigida e o primeiro upload isolado criou um objeto no bucket correto. Deduplicação, leitura pública, ativação e publicação integrada permanecem pendentes. Detalhes em [R2-08 — inclusão no inventário](R2-08_HOMOLOGACAO_2026-10-23.md).
+R2-08 foi acrescentado em 23/10 após health declarativo do Worker versão 1.0.0 e cadastrado como ID 19, inativo. A variável `PUBLIC_BASE_URL` ausente foi corrigida; upload isolado, leitura pública e deduplicação foram aprovados. Ativação e publicação integrada permanecem pendentes. Detalhes em [R2-08 — inclusão no inventário](R2-08_HOMOLOGACAO_2026-10-23.md).
 
 | Storage | Upload isolado | Deduplicação | Leitura pública | Publicação integrada |
 | --- | --- | --- | --- | --- |
@@ -34,7 +34,7 @@ R2-08 foi acrescentado em 23/10 após health declarativo do Worker versão 1.0.0
 | R2-04 | 1200×800, 172992 bytes, pel/featured | existing=true | Confirmada | Confirmada pelo usuário, PEL |
 | R2-05 | 1200×675, 100605 bytes, m360/featured | existing=true | Confirmada | Pendente |
 | R2-06 | 854×560, 125540 bytes, pel/featured | existing=true | Confirmada | Pendente |
-| R2-08 | Objeto novo confirmado no bucket, m360/featured | Pendente | Pendente | Pendente |
+| R2-08 | Objeto novo confirmado no bucket, m360/featured | existing=true | Confirmada | Pendente |
 
 Primeiras respostas existing=false; repetições preservaram URL e objeto. Publicação confirmada não equivale a inspeção independente de todos os nodes. Exemplos publicados:
 

@@ -18,7 +18,7 @@ SELECT
     'core360-storage-hml-8',
     NULL,
     NULL,
-    'Health do Worker validado; upload pendente',
+    'Upload, leitura publica e deduplicacao homologados',
     0,
     100,
     0

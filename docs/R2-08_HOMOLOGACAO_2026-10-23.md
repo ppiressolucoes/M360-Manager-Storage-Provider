@@ -15,19 +15,19 @@ Atualizado em 23/10/2026, Brasília. Fonte: configuração e resposta de health 
 
 O endpoint `/health` retornou `status=ok`, proxy `flow-r2-storage-proxy-08`, versão `1.0.0`, provider `cloudflare_r2` e binding `MEDIA_BUCKET`. Isso comprova que o Worker responde e reconhece sua configuração declarativa; não comprova vínculo efetivo com o bucket, autenticação do upload, escrita, deduplicação, leitura pública nem integração com o Core.
 
-O primeiro upload isolado revelou `public_base_url_not_configured`. A variável `PUBLIC_BASE_URL`, que não é herdada do cadastro do Core, foi então configurada no Worker R2-08. A repetição retornou sucesso com `existing=false`, e o painel confirmou o objeto no bucket `core360-storage-hml-8`, sob `m360/featured`. Isso aprova o primeiro PUT e o binding efetivo; URL pública e deduplicação permanecem pendentes.
+O primeiro upload isolado revelou `public_base_url_not_configured`. A variável `PUBLIC_BASE_URL`, que não é herdada do cadastro do Core, foi então configurada no Worker R2-08. A repetição retornou sucesso com `existing=false`, e o painel confirmou o objeto no bucket `core360-storage-hml-8`, sob `m360/featured`. A URL pública foi aberta sem autenticação e o mesmo upload foi repetido com `existing=true`. PUT, binding, entrega pública e deduplicação estão aprovados.
 
 O item usado como massa veio de uma execução R2-02, mas o endpoint do teste foi direcionado manualmente ao Worker R2-08. Por isso seus campos de reserva não são evidência do storage testado e nenhuma finalização deve ser executada com esse token. O destino R2-08 foi confirmado pelo host retornado e pelo bucket no painel.
 
 ## Estado e próximos gates
 
-O cadastro foi executado pelo usuário e confirmado por SELECT: `storage_id=19`, alias `R2-08`, provider `cloudflare_r2`, driver `s3_compatible` e `ind_ativo=0`. Endpoint, URL pública e bucket correspondem à configuração prevista. O SQL idempotente está em `database/mysql/inventory/register_R2-08.sql`; não foi executado pelo agente. R2-08 agora integra o inventário do Core como storage inativo, mas ainda não está homologado para ativação.
+O cadastro foi executado pelo usuário e confirmado por SELECT: `storage_id=19`, alias `R2-08`, provider `cloudflare_r2`, driver `s3_compatible` e `ind_ativo=0`. Endpoint, URL pública e bucket correspondem à configuração prevista. O SQL idempotente está em `database/mysql/inventory/register_R2-08.sql`; não foi executado pelo agente. R2-08 agora integra o inventário do Core como storage inativo e está homologado isoladamente para ativação controlada. O SQL preparado está em `database/mysql/inventory/activate_R2-08.sql` e não foi executado pelo agente.
 
 Ordem de homologação:
 
-1. abrir a URL pública sem autenticação;
-2. repetir o mesmo upload e exigir `existing=true`;
-3. somente depois preparar ativação do ID 19 e observar seleção natural no workflow integrado;
-4. validar finalização e publicação até o consumidor final.
+1. revisar e executar conscientemente a ativação do ID 19;
+2. confirmar por SELECT que `ind_ativo=1` e o endpoint permanece correto;
+3. observar seleção natural pela SP, sem fixar endpoint ou provider;
+4. validar upload, finalização e publicação até o consumidor final.
 
 Não criar novo provider lógico nem ramo no n8n: R2-08 compartilha `cloudflare_r2` e deve usar dinamicamente o `endpoint_url` retornado pela reserva. O `endpoint_url` de cadastro é a origem do Worker sem `/health`; a URL pública pertence ao objeto entregue e não substitui o endpoint de upload.
