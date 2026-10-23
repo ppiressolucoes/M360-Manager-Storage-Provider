@@ -7,7 +7,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
-| P0 | B2-01 (12) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Implantar health autenticado; corrigir chave/capabilities/escopo até o probe retornar 404 |
+| P0 | B2-01 (12) | Health autenticado implantado; chamada sem header retornou 401 esperado | Repetir no modo HTTP com X-Proxy-Key; corrigir acesso até o probe retornar 404 |
 | P0 | B2-02 (13) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Repetir correção independente após homologar B2-01 |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |

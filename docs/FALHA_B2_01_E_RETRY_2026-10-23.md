@@ -48,6 +48,8 @@ O mesmo sintoma nas duas contas aponta para um procedimento comum de configuraç
 
 Não revogar a chave anterior antes da confirmação de B2-01 e não copiar nenhum valor de uma conta B2 para a outra.
 
+Em 23/10/2026, a revisão com `GET /health/storage` foi implantada em B2-01. A primeira chamada pelo modo Visualizar do painel Cloudflare retornou HTTP 401 com `unauthorized`, resultado esperado porque esse modo não enviou `X-Proxy-Key`. A resposta comprova deployment e proteção da rota, mas não executou o HEAD contra o B2. O próximo gate é repetir a chamada no modo HTTP, adicionando o header secreto sem expô-lo em evidências.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
