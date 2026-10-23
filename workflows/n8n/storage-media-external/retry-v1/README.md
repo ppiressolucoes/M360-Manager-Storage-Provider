@@ -70,3 +70,9 @@ Classifica Falha -> Finaliza Falha -> Valida Finalização -> IF retry -- true -
 ## Limite da evidência atual
 
 A falha observada retornou HTTP 502 do Worker, código `b2_upload_failed` e status upstream 520. Isso comprova uma resposta ambígua do PUT, não a causa raiz no B2 nem a ausência do objeto. O código deste pacote foi validado localmente, mas implantação e homologação permanecem pendentes.
+
+## Progresso informado
+
+- 23/10/2026: node **Prepara Tentativa** criado pelo usuário no n8n;
+- pendente antes do próximo node: confirmar `tentativa=1`, `max_tentativas=3`, lista vazia de storages tentados e presença de `binary.data`;
+- códigos implantados de B2-01 e B2-02 preservados e comparados; ambos correspondem ao baseline pré-reconciliação.

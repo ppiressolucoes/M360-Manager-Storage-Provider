@@ -15,7 +15,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
 | P1 | Baseline operacional | Artefatos públicos não equivalem integralmente ao runtime | Recuperar export atual, Code nodes, Worker R2 e `SHOW CREATE PROCEDURE` |
-| P2 | Retry de até três tentativas | Primeira falha real sanitizada observada; candidato local preparado, não implantado | Implantar primeiro reconciliação do Worker; montar cópia inativa do n8n e homologar |
+| P2 | Retry de até três tentativas | Falha real sanitizada; candidato local preparado; `Prepara Tentativa` criado, ainda sem evidência de saída | Validar contexto/binário do node; depois substituir `Normaliza` e implantar reconciliação nos dois Workers |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
 | P4 | Entrega R2 de produção | URLs `r2.dev` usadas em homologação | Planejar domínio/CDN, compatibilidade e rollback |
 | Aguardar | OCI | Apenas sugestão | Reavaliar somente se priorizado |

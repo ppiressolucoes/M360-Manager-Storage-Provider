@@ -36,3 +36,7 @@ Não basta conectar o erro diretamente ao início: isso pode deixar reserva órf
 - `workflows/n8n/storage-media-external/retry-v1/`: instruções, quatro Code nodes completos, hashes e testes locais.
 
 O export baseline do n8n não foi modificado. A implantação do Worker, a montagem no n8n e a homologação operacional permanecem pendentes. Depois da homologação, obter novo export sanitizado para substituir o baseline e registrar o resultado real.
+
+## Continuidade do redesenho
+
+Em 23/10/2026, o usuário informou a criação do node `Prepara Tentativa` e preservou os códigos correntes de B2-01 e B2-02. Os dois códigos de Worker são idênticos e equivalem ao baseline anterior à reconciliação após normalização de finais de linha; nenhuma credencial literal foi identificada. A saída do novo node e a preservação de `binary.data` ainda precisam ser confirmadas antes de substituir `Normaliza`.
