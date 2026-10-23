@@ -52,6 +52,8 @@ Em 23/10/2026, a revisão com `GET /health/storage` foi implantada em B2-01. A p
 
 A chamada autenticada seguinte retornou HTTP 200, `probe_status=404`, `bucket_read_verified=true` e `bucket_write_verified=false`. O gate de leitura de B2-01 está aprovado: a configuração atualmente implantada assina o HEAD, alcança o bucket e distingue corretamente uma chave inexistente. Não há motivo para rotacionar a Application Key antes do gate de escrita. O 403 observado na execução anterior não foi reproduzido pelo probe; a escrita continua não comprovada porque o health é deliberadamente somente leitura.
 
+Na sequência, o mesmo item da execução anterior foi enviado diretamente ao node `Upload S3B2 - Proxy`. B2-01 retornou sucesso para um objeto novo, com `existing=false` e `reconciled_after_put_error=false`. Isso comprova que o deployment atual executa `HEAD` de ausência e `PUT` com sucesso, sem depender do fallback ou da reconciliação. Hash, URL pública, nome e demais dados do arquivo não foram versionados. O upstream 403 anterior não foi reproduzido; sua causa histórica permanece inconclusiva, portanto não deve ser atribuída retroativamente a uma capability específica.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
@@ -82,7 +84,7 @@ Em 23/10/2026, o usuário criou e validou o node `Prepara Tentativa`: primeira t
 
 A revisão reconciliadora foi informada como implantada em B2-01 (`flow-b2-storage-proxy-hml`). Duas consultas `GET /health` realizadas pelo ambiente Codex foram recusadas pelo túnel de rede com `CONNECT 403`, antes de alcançar o domínio; por isso a saúde do Worker deve ser confirmada pelo navegador ou painel Cloudflare, sem interpretar esse bloqueio como falha da implantação.
 
-O usuário confirmou pelo painel Cloudflare que `/health` de B2-01 respondeu com `provider=backblaze_b2`, `configured=true` e `bucket_write_verified=false`. O primeiro gate de implantação está aprovado: o Worker está acessível e reconhece todas as configurações obrigatórias. Esse endpoint não comprova escrita no bucket, que permanece para a homologação funcional.
+O usuário confirmou pelo painel Cloudflare que `/health` de B2-01 respondeu com `provider=backblaze_b2`, `configured=true` e `bucket_write_verified=false`. O primeiro gate de implantação foi aprovado: o Worker está acessível e reconhece todas as configurações obrigatórias. Posteriormente, health autenticado e PUT controlado comprovaram leitura e escrita reais em B2-01; o campo estático do health continua `false` porque essa rota não mantém estado da homologação.
 
 A mesma revisão foi implantada em B2-02 (`flow-b2-02-storage-proxy-hml`), preservando sua configuração independente. O usuário confirmou a mesma resposta saudável em `/health`. Os dois Workers estão configurados e acessíveis; escrita, reconciliação real e retry integrado ainda não foram homologados.
 

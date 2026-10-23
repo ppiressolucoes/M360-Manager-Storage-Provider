@@ -2,7 +2,7 @@
 
 Arquivo para colar no editor Cloudflare: `flow-b2-storage-proxy-hml.mjs` (Worker Module, sem dependências).
 
-Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. O usuário implantou a revisão nos Workers B2-01 e B2-02 e validou `/health` com `configured=true`; escrita real após essa revisão ainda requer homologação.
+Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. O usuário implantou a revisão nos Workers B2-01 e B2-02 e validou `/health` com `configured=true`. Depois, B2-01 aprovou health autenticado e upload controlado de objeto novo; B2-02 ainda precisa repetir esses gates na revisão atual.
 
 Worker: `flow-b2-storage-proxy-hml.core360.workers.dev`.
 Bucket privado confirmado pelo usuário: `core360-storage-b2-hml`.
@@ -31,7 +31,7 @@ B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.work
 
 Para o retry v1, publicar exatamente a mesma revisão reconciliadora em `flow-b2-storage-proxy-hml` (B2-01) e `flow-b2-02-storage-proxy-hml` (B2-02). Cada deployment conserva suas próprias variáveis `B2_BUCKET_NAME`, `B2_REGION`, `B2_S3_ENDPOINT`, `PUBLIC_BASE_URL` e seus próprios secrets `B2_KEY_ID`, `B2_APPLICATION_KEY`, `PROXY_KEY`. Não copiar valores entre contas e não versioná-los.
 
-Em 23/10/2026, B2-01 respondeu ao health autenticado de storage com `probe_status=404` e `bucket_read_verified=true`. Isso aprova assinatura, endpoint, bucket e leitura da chave inexistente no deployment atual, mas não atesta PUT; `bucket_write_verified=false` permanece intencional até um upload controlado ou chamada real concluir com sucesso.
+Em 23/10/2026, B2-01 respondeu ao health autenticado de storage com `probe_status=404` e `bucket_read_verified=true`. Em seguida, um upload controlado criou objeto novo com `existing=false` e `reconciled_after_put_error=false`, aprovando o PUT do deployment atual. `bucket_write_verified=false` permanece na resposta do health por desenho: a rota é somente leitura e não persiste estado de homologação.
 
 Em 23/10/2026, o usuário preservou e forneceu os códigos então implantados nos dois Workers. Os arquivos são idênticos entre si e correspondem à versão do repositório anterior à reconciliação, após normalizar CRLF/LF; a verificação local não encontrou credenciais literais. Assim, o diff candidato está limitado à reconciliação pós-PUT e ao campo de resposta associado. Os anexos não foram duplicados no Git porque o baseline já é recuperável pelo histórico.
 
