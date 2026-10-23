@@ -50,6 +50,8 @@ Não revogar a chave anterior antes da confirmação de B2-01 e não copiar nenh
 
 Em 23/10/2026, a revisão com `GET /health/storage` foi implantada em B2-01. A primeira chamada pelo modo Visualizar do painel Cloudflare retornou HTTP 401 com `unauthorized`, resultado esperado porque esse modo não enviou `X-Proxy-Key`. A resposta comprova deployment e proteção da rota, mas não executou o HEAD contra o B2. O próximo gate é repetir a chamada no modo HTTP, adicionando o header secreto sem expô-lo em evidências.
 
+A chamada autenticada seguinte retornou HTTP 200, `probe_status=404`, `bucket_read_verified=true` e `bucket_write_verified=false`. O gate de leitura de B2-01 está aprovado: a configuração atualmente implantada assina o HEAD, alcança o bucket e distingue corretamente uma chave inexistente. Não há motivo para rotacionar a Application Key antes do gate de escrita. O 403 observado na execução anterior não foi reproduzido pelo probe; a escrita continua não comprovada porque o health é deliberadamente somente leitura.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
