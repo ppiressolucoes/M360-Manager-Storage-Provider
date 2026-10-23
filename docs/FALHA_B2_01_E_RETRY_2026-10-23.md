@@ -58,6 +58,10 @@ A reexecução imediata do mesmo upload retornou `existing=true` e `reconciled_a
 
 A URL pública resultante também foi aberta e validada sem autenticação. B2-01 fica homologado ponta a ponta no deployment atual: health autenticado, leitura de ausência, PUT, deduplicação e entrega pública. O foco operacional passa a B2-02, repetindo os mesmos gates sem copiar secrets ou variáveis entre contas.
 
+A mesma revisão foi então implantada em B2-02 preservando sua configuração independente. `GET /health/storage` autenticado retornou HTTP 503, `probe_status=403`, `bucket_read_verified=false` e `bucket_write_verified=false`. Como B2-01 aprova o mesmo código, a falha fica isolada na configuração da segunda conta: par `B2_KEY_ID`/`B2_APPLICATION_KEY`, capabilities, expiração, restrição ao bucket ou correspondência de endpoint/região. O `X-Proxy-Key` está correto, pois a rota autenticada alcançou o probe S3.
+
+Correção escolhida para B2-02: criar um novo Application Key sem revogar o anterior, restrito ao bucket próprio, com acesso Read and Write, listagem de nomes de buckets habilitada, sem prefixo e sem expiração incompatível. Atualizar `B2_KEY_ID` e `B2_APPLICATION_KEY` juntos no Worker, implantar e repetir o health autenticado. A chave anterior só poderá ser revogada depois dos gates de HEAD, PUT, deduplicação e entrega pública.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:

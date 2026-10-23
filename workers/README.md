@@ -33,6 +33,8 @@ Para o retry v1, publicar exatamente a mesma revisão reconciliadora em `flow-b2
 
 Em 23/10/2026, B2-01 respondeu ao health autenticado de storage com `probe_status=404` e `bucket_read_verified=true`. Em seguida, um upload controlado criou objeto novo com `existing=false` e `reconciled_after_put_error=false`, aprovando o PUT do deployment atual. A repetição do mesmo upload retornou `existing=true`, comprovando HEAD de objeto existente e deduplicação sem novo PUT; a entrega pela URL pública também foi validada. `bucket_write_verified=false` permanece na resposta do health por desenho: a rota é somente leitura e não persiste estado de homologação.
 
+B2-02 recebeu a mesma revisão, mas seu health autenticado retornou `probe_status=403` e `bucket_read_verified=false`. O contraste isola a falha na configuração da segunda conta, não no módulo comum ou no proxy do n8n. O plano é rotacionar somente o par de Application Key de B2-02, preservando a chave anterior para rollback até a homologação completa.
+
 Em 23/10/2026, o usuário preservou e forneceu os códigos então implantados nos dois Workers. Os arquivos são idênticos entre si e correspondem à versão do repositório anterior à reconciliação, após normalizar CRLF/LF; a verificação local não encontrou credenciais literais. Assim, o diff candidato está limitado à reconciliação pós-PUT e ao campo de resposta associado. Os anexos não foram duplicados no Git porque o baseline já é recuperável pelo histórico.
 
 Custos não são garantidamente zero: monitorar quotas B2 e Workers. Cache reduz acessos, mas não elimina misses nem operações de upload.
