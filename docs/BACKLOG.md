@@ -14,7 +14,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
-| P0 | R2-08 (ID pendente) | Worker v1.0.0 e binding `MEDIA_BUCKET` confirmados por health | Homologar upload/leitura/deduplicação; depois cadastrar inativo e confirmar ID |
+| P0 | R2-08 (19) | Cadastrado e confirmado inativo; Worker v1.0.0 saudável | Homologar upload/leitura/deduplicação antes de preparar ativação |
 | P1 | Baseline operacional | Export v0.4 e nove Code nodes recuperados/sanitizados; Worker R2 e DDLs ainda incompletos | Recuperar Worker R2 e `SHOW CREATE PROCEDURE` |
 | P2 | Retry de até três tentativas | v0.4 homologada em falha real: B2 falhou, retry reservou R2 e concluiu com sucesso | Aplicar classificador candidato e publicar/auditar v0.5 |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
