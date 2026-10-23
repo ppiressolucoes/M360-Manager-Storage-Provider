@@ -54,6 +54,8 @@ A chamada autenticada seguinte retornou HTTP 200, `probe_status=404`, `bucket_re
 
 Na sequência, o mesmo item da execução anterior foi enviado diretamente ao node `Upload S3B2 - Proxy`. B2-01 retornou sucesso para um objeto novo, com `existing=false` e `reconciled_after_put_error=false`. Isso comprova que o deployment atual executa `HEAD` de ausência e `PUT` com sucesso, sem depender do fallback ou da reconciliação. Hash, URL pública, nome e demais dados do arquivo não foram versionados. O upstream 403 anterior não foi reproduzido; sua causa histórica permanece inconclusiva, portanto não deve ser atribuída retroativamente a uma capability específica.
 
+A reexecução imediata do mesmo upload retornou `existing=true` e `reconciled_after_put_error=false`. O Worker obteve HEAD 200 para o objeto existente e evitou um novo PUT, aprovando também a deduplicação content-addressed. Com isso, B2-01 tem leitura de ausência, escrita, leitura de objeto existente e deduplicação comprovadas no deployment atual. A evidência não explica retroativamente o 403 anterior; qualquer recorrência deve ser correlacionada com deployment, horário e request ID do B2.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
