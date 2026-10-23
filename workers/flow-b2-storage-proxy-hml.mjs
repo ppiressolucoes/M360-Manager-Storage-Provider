@@ -57,20 +57,25 @@ async function authorized(request, env) {
 async function verifyStorageRead(request, env) {
   if (!await authorized(request, env)) return json({ error: 'unauthorized' }, 401);
 
-  // A chave-sentinela não corresponde a um arquivo real. Com autenticação,
-  // bucket e capabilities corretos, o B2 deve responder 404 ao HEAD.
-  const probeKey = `m360/featured/${'0'.repeat(64)}.jpg`;
-  const probe = await s3(env, 'HEAD', probeKey);
-  const probeStatus = probe.status;
-  await probe.body?.cancel();
-  const bucketReadVerified = probeStatus === 200 || probeStatus === 404;
+  // As chaves-sentinela não correspondem a arquivos reais. Com autenticação,
+  // bucket, capabilities e prefixos corretos, o B2 deve responder 404 aos HEADs.
+  const probeStatuses = {};
+  for (const portal of ['m360', 'pel', 'trilhas']) {
+    const probeKey = `${portal}/featured/${'0'.repeat(64)}.jpg`;
+    const probe = await s3(env, 'HEAD', probeKey);
+    probeStatuses[portal] = probe.status;
+    await probe.body?.cancel();
+  }
+  const bucketReadVerified = Object.values(probeStatuses)
+    .every(status => status === 200 || status === 404);
 
   return json({
     provider: 'backblaze_b2',
     configured: true,
     bucket_read_verified: bucketReadVerified,
     bucket_write_verified: false,
-    probe_status: probeStatus,
+    probe_status: probeStatuses.m360,
+    probe_statuses: probeStatuses,
   }, bucketReadVerified ? 200 : 503);
 }
 

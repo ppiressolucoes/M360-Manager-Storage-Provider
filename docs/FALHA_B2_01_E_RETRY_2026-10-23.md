@@ -70,6 +70,12 @@ A reexecução do mesmo upload no B2-02 retornou `existing=true` e `reconciled_a
 
 A entrega pública do objeto de B2-02 foi validada sem autenticação. A nova Application Key está homologada ponta a ponta: HEAD de ausência, PUT, HEAD de objeto existente/deduplicação e GET público. A chave anterior deixa de ser necessária para rollback e pode ser revogada, desde que o operador confirme o nome/ID antigo sem expô-lo e repita `GET /health/storage` depois da revogação.
 
+## Recorrência de B2-01 às 23:18 UTC
+
+Uma nova chamada real de B2-01 retornou `b2_lookup_failed`, HTTP 502 e upstream 403 na tentativa 1/3. O alerta ainda classificou como `falha_transitoria` com cooldown de 5 minutos porque o runtime permanece na v0.4; o candidato v0.5 já trata upstream 403 como `configuracao_storage` com 60 minutos.
+
+A homologação controlada anterior de B2-01 usou `m360/featured`, assim como a primeira versão de `/health/storage`. O alerta não informa o folder, portanto ainda não distingue falha geral de credencial de restrição a `pel/featured` ou `trilhas/featured`. O health candidato foi ampliado para realizar HEAD somente leitura nos três prefixos e retornar `probe_statuses` por portal. B2-01 volta a P0 até esse gate ser executado; não rotacionar a chave sem antes observar os três status.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:

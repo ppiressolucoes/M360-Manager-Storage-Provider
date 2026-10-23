@@ -7,7 +7,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 (11) | Novo fluxo integral não confirmado; item foi reutilizado apenas como massa do teste R2-08 | Obter evidência sanitizada de release integral |
-| Operar | B2-01 (12) | HEAD, PUT, deduplicação e entrega pública homologados no deployment atual | Monitorar eventual recorrência do 403 histórico |
+| P0 | B2-01 (12) | Novo `b2_lookup_failed` upstream 403 após homologação m360 | Implantar health multiprefixo e comparar m360/pel/trilhas antes de rotacionar chave |
 | Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |

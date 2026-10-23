@@ -103,6 +103,8 @@ await withFetch([
 
 await withFetch([
   new Response(null, { status: 404 }),
+  new Response(null, { status: 404 }),
+  new Response(null, { status: 404 }),
 ], async calls => {
   const response = await worker.fetch(storageHealthRequest(), env, {});
   const body = await response.json();
@@ -113,19 +115,23 @@ await withFetch([
     bucket_read_verified: true,
     bucket_write_verified: false,
     probe_status: 404,
+    probe_statuses: { m360: 404, pel: 404, trilhas: 404 },
   });
-  assert.deepEqual(calls.map(call => call.options.method), ['HEAD']);
+  assert.deepEqual(calls.map(call => call.options.method), ['HEAD', 'HEAD', 'HEAD']);
 });
 
 await withFetch([
+  new Response(null, { status: 404 }),
   new Response(null, { status: 403 }),
+  new Response(null, { status: 404 }),
 ], async calls => {
   const response = await worker.fetch(storageHealthRequest(), env, {});
   const body = await response.json();
   assert.equal(response.status, 503);
   assert.equal(body.bucket_read_verified, false);
-  assert.equal(body.probe_status, 403);
-  assert.deepEqual(calls.map(call => call.options.method), ['HEAD']);
+  assert.equal(body.probe_status, 404);
+  assert.deepEqual(body.probe_statuses, { m360: 404, pel: 403, trilhas: 404 });
+  assert.deepEqual(calls.map(call => call.options.method), ['HEAD', 'HEAD', 'HEAD']);
 });
 
 await withFetch([], async calls => {

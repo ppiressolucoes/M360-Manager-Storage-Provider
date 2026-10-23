@@ -15,7 +15,7 @@ Não usar binding MEDIA_BUCKET; o acesso B2 é S3 autenticado por Signature V4.
 
 Rotas:
 - GET /health: verifica presença de configuração; não atesta acesso/escrita no bucket.
-- GET /health/storage: exige X-Proxy-Key e executa somente um HEAD assinado sobre uma chave-sentinela; `probe_status=404` e `bucket_read_verified=true` confirmam autenticação, endpoint, bucket e leitura/listagem suficientes para a deduplicação. Não grava objetos nem atesta `writeFiles`.
+- GET /health/storage: exige X-Proxy-Key e executa somente HEADs assinados sobre chaves-sentinela em `m360/featured`, `pel/featured` e `trilhas/featured`; `probe_statuses` com 404 nos três portais e `bucket_read_verified=true` confirmam autenticação, endpoint, bucket e acesso aos prefixos. Não grava objetos nem atesta `writeFiles`.
 - POST /upload: exige X-Proxy-Key e body binário, máximo 10 MiB.
 - GET/HEAD /<portal>/featured/<sha256>.<extensão>: entrega pública de objeto do bucket privado.
 
