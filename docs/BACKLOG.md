@@ -14,6 +14,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
+| P0 | R2-08 (ID pendente) | Worker v1.0.0 e binding `MEDIA_BUCKET` confirmados por health | Homologar upload/leitura/deduplicação; depois cadastrar inativo e confirmar ID |
 | P1 | Baseline operacional | Export v0.4 e nove Code nodes recuperados/sanitizados; Worker R2 e DDLs ainda incompletos | Recuperar Worker R2 e `SHOW CREATE PROCEDURE` |
 | P2 | Retry de até três tentativas | v0.4 homologada em falha real: B2 falhou, retry reservou R2 e concluiu com sucesso | Aplicar classificador candidato e publicar/auditar v0.5 |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
@@ -24,7 +25,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 
 1. **P0 — B2:** recuperar B2-01 e B2-02, começando pelo probe autenticado somente leitura de B2-01.
 2. **P1 — classificação:** fallback real B2 → R2 homologado; publicar v0.5 com precedência do upstream 403.
-3. **P2 — baseline/evidências restantes:** recuperar artefatos operacionais e fechar R2-02, R2-05, R2-06 e R2-07.
+3. **P2 — baseline/evidências restantes:** recuperar artefatos operacionais e fechar R2-02, R2-05, R2-06, R2-07 e a inclusão controlada de R2-08.
 4. **P3 — observabilidade:** implementar monitoramento R2/B2 inicialmente sem bloqueio automático.
 5. **P4 — produção:** definir entrega R2, compatibilidade de URLs, SLOs e rollback.
 
