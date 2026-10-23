@@ -13,6 +13,8 @@ Este pacote foi preparado após a primeira falha real sanitizada de upload em B2
 - a nova reserva continua global: `CALL SP_Core_Storage_Reserva(NULL, 3)`;
 - binário, hash e metadados são preservados; credenciais e token da reserva anterior não seguem para a próxima tentativa.
 
+B2-01 e B2-02 usam o mesmo provider lógico `backblaze_b2`, mas possuem storages, buckets e Workers independentes. O workflow mantém um único ramo **Upload S3B2 - Proxy** e usa dinamicamente `endpoint_url` da reserva; não criar um ramo por conta. O cooldown é aplicado ao `storage_id` que falhou, permitindo que a nova reserva selecione a outra conta B2 ou qualquer outro storage/provider elegível.
+
 O cooldown usa o comportamento já existente de `SP_Core_Storage_Finaliza` e `SP_Core_Storage_Reserva`: enquanto `dth_bloqueio_ate` estiver no futuro, o storage falho não é elegível. Assim, o fallback pode selecionar outro repositório ou provider sem mudar a assinatura das SPs.
 
 ## Alterações no workflow
@@ -59,7 +61,7 @@ Classifica Falha -> Finaliza Falha -> Valida Finalização -> IF retry -- true -
 
 ## Ordem de implantação
 
-1. Publicar e validar primeiro o Worker B2 com reconciliação `HEAD` pós-PUT ambíguo.
+1. Publicar e validar primeiro a mesma revisão do Worker, com reconciliação `HEAD` pós-PUT ambíguo, em B2-01 (`flow-b2-storage-proxy-hml`) e B2-02 (`flow-b2-02-storage-proxy-hml`), sem compartilhar secrets ou variáveis entre contas.
 2. Montar o retry em uma cópia inativa do workflow.
 3. Testar os casos do plano de evolução, começando por mocks/controlados; não provocar falha em produção.
 4. Exportar, sanitizar e comparar o workflow resultante.

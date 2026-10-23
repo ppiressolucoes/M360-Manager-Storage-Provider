@@ -25,6 +25,8 @@ O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicaç
 6. se ainda houver tentativa disponível, o mesmo binário volta à reserva global com provider `NULL`;
 7. após três tentativas totais, erro definitivo, pool vazio ou falha de finalização, o fluxo encerra explicitamente.
 
+Existem duas contas B2, representadas por B2-01 e B2-02, com Workers próprios. Elas permanecem no mesmo ramo lógico `backblaze_b2`: a SP seleciona o storage e o node HTTP usa seu `endpoint_url`. A correção do Worker deve ser implantada separadamente nos dois deployments, mantendo secrets, bucket e URL pública específicos de cada conta.
+
 Não basta conectar o erro diretamente ao início: isso pode deixar reserva órfã, repetir B2-01 imediatamente, perder o binário ou ultrapassar o limite aprovado.
 
 ## Artefatos preparados

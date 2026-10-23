@@ -28,4 +28,6 @@ Validação local realizada: sintaxe e simulações de autenticação inválida,
 
 B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.workers.dev`, bucket `core360-02-storage-b2-hml` e secrets independentes. Não substituir a configuração de B2-01 ao criar nova conta.
 
+Para o retry v1, publicar exatamente a mesma revisão reconciliadora em `flow-b2-storage-proxy-hml` (B2-01) e `flow-b2-02-storage-proxy-hml` (B2-02). Cada deployment conserva suas próprias variáveis `B2_BUCKET_NAME`, `B2_REGION`, `B2_S3_ENDPOINT`, `PUBLIC_BASE_URL` e seus próprios secrets `B2_KEY_ID`, `B2_APPLICATION_KEY`, `PROXY_KEY`. Não copiar valores entre contas e não versioná-los.
+
 Custos não são garantidamente zero: monitorar quotas B2 e Workers. Cache reduz acessos, mas não elimina misses nem operações de upload.
