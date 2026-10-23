@@ -21,13 +21,13 @@ O item usado como massa veio de uma execução R2-02, mas o endpoint do teste fo
 
 ## Estado e próximos gates
 
-O cadastro foi executado pelo usuário e confirmado por SELECT: `storage_id=19`, alias `R2-08`, provider `cloudflare_r2`, driver `s3_compatible` e `ind_ativo=0`. Endpoint, URL pública e bucket correspondem à configuração prevista. O SQL idempotente está em `database/mysql/inventory/register_R2-08.sql`; não foi executado pelo agente. R2-08 agora integra o inventário do Core como storage inativo e está homologado isoladamente para ativação controlada. O SQL preparado está em `database/mysql/inventory/activate_R2-08.sql` e não foi executado pelo agente.
+O cadastro foi executado pelo usuário e inicialmente confirmado como `storage_id=19`, alias `R2-08`, provider `cloudflare_r2`, driver `s3_compatible` e `ind_ativo=0`. Após os testes isolados, a ativação foi executada pelo usuário e confirmada por SELECT: `ind_ativo=1`, status `Integracao em homologacao`, com endpoint, URL pública e bucket ainda correspondentes à configuração prevista. Os SQLs versionados estão em `database/mysql/inventory/register_R2-08.sql` e `database/mysql/inventory/activate_R2-08.sql`; nenhum deles foi executado pelo agente.
 
 Ordem de homologação:
 
-1. revisar e executar conscientemente a ativação do ID 19;
-2. confirmar por SELECT que `ind_ativo=1` e o endpoint permanece correto;
-3. observar seleção natural pela SP, sem fixar endpoint ou provider;
-4. validar upload, finalização e publicação até o consumidor final.
+1. observar seleção natural pela SP, sem fixar endpoint ou provider;
+2. validar upload e `Finaliza Sucesso` com reserva válida;
+3. confirmar retorno ao fluxo pai e publicação até o consumidor final;
+4. promover o status operacional somente após a evidência integrada.
 
 Não criar novo provider lógico nem ramo no n8n: R2-08 compartilha `cloudflare_r2` e deve usar dinamicamente o `endpoint_url` retornado pela reserva. O `endpoint_url` de cadastro é a origem do Worker sem `/health`; a URL pública pertence ao objeto entregue e não substitui o endpoint de upload.

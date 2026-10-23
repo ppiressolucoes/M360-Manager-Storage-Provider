@@ -4,7 +4,7 @@ Referência: Brasília, UTC−3. Fonte: saídas e confirmações do usuário no 
 
 ## Inventário e evidências
 
-Três providers: cloudinary, cloudflare_r2, backblaze_b2. O baseline de 20/10 continha 17 storages (9 Cloudinary, 2 B2, 6 R2). Depois, R2-07 foi confirmado como ID 18 e R2-08 como ID 19, ambos inativos nas evidências de cadastro. Assim, há 19 registros comprovados no Core. CLOUDINARY-07 permanece inativo. Não afirmar total de ativos: execução das ativações recentes R2-05/R2-06/R2-07 ainda não foi confirmada explicitamente e R2-08 continua inativo.
+Três providers: cloudinary, cloudflare_r2, backblaze_b2. O baseline de 20/10 continha 17 storages (9 Cloudinary, 2 B2, 6 R2). Depois, R2-07 foi confirmado como ID 18 inativo e R2-08 como ID 19. R2-08 foi ativado em 23/10 com status `Integracao em homologacao`. Assim, há 19 registros comprovados no Core. CLOUDINARY-07 permanece inativo. Não afirmar o total global de ativos: execução das ativações recentes R2-05/R2-06/R2-07 ainda não foi confirmada explicitamente.
 
 | Storage | ID | Bucket | Worker base |
 | --- | ---: | --- | --- |
@@ -26,7 +26,7 @@ Três providers: cloudinary, cloudflare_r2, backblaze_b2. O baseline de 20/10 co
 
 Todos com provider cloudflare_r2, driver s3_compatible, prioridade inicial 100, region_name e credential_ref NULL. Cada Worker usa binding MEDIA_BUCKET ao bucket, secret PROXY_KEY padrão e variável PUBLIC_BASE_URL. Código R2 existente aplicado pelo usuário; identificação fixa de cada proxy ajustada. Health ok é declarativo, não prova escrita. Código completo R2 não foi fornecido como artefato nesta evolução.
 
-R2-08 foi acrescentado em 23/10 após health declarativo do Worker versão 1.0.0 e cadastrado como ID 19, inativo. A variável `PUBLIC_BASE_URL` ausente foi corrigida; upload isolado, leitura pública e deduplicação foram aprovados. Ativação e publicação integrada permanecem pendentes. Detalhes em [R2-08 — inclusão no inventário](R2-08_HOMOLOGACAO_2026-10-23.md).
+R2-08 foi acrescentado em 23/10 após health declarativo do Worker versão 1.0.0 e cadastrado como ID 19. A variável `PUBLIC_BASE_URL` ausente foi corrigida; upload isolado, leitura pública e deduplicação foram aprovados. A ativação foi confirmada com status `Integracao em homologacao`; seleção natural, finalização e publicação integrada permanecem pendentes. Detalhes em [R2-08 — inclusão no inventário](R2-08_HOMOLOGACAO_2026-10-23.md).
 
 | Storage | Upload isolado | Deduplicação | Leitura pública | Publicação integrada |
 | --- | --- | --- | --- | --- |
