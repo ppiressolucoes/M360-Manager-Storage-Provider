@@ -62,6 +62,8 @@ A mesma revisão foi então implantada em B2-02 preservando sua configuração i
 
 Correção escolhida para B2-02: criar um novo Application Key sem revogar o anterior, restrito ao bucket próprio, com acesso Read and Write, listagem de nomes de buckets habilitada, sem prefixo e sem expiração incompatível. Atualizar `B2_KEY_ID` e `B2_APPLICATION_KEY` juntos no Worker, implantar e repetir o health autenticado. A chave anterior só poderá ser revogada depois dos gates de HEAD, PUT, deduplicação e entrega pública.
 
+Após a rotação coordenada dos dois secrets, o health autenticado de B2-02 passou a retornar HTTP 200, `probe_status=404` e `bucket_read_verified=true`. O contraste antes/depois confirma a Application Key/configuração anterior como causa operacional do 403 em B2-02. A nova chave permanece candidata até passar por PUT, deduplicação e entrega pública; a chave anterior continua disponível para rollback durante esses gates.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
