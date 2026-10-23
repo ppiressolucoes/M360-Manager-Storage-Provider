@@ -7,8 +7,8 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
-| P0 | B2-01 (12) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Corrigir credencial/capabilities/escopo do bucket e retestar |
-| P0 | B2-02 (13) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Corrigir credencial/capabilities/escopo do bucket e retestar |
+| P0 | B2-01 (12) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Implantar health autenticado; corrigir chave/capabilities/escopo até o probe retornar 404 |
+| P0 | B2-02 (13) | Alerta real: `b2_lookup_failed`, upstream 403 no HEAD inicial | Repetir correção independente após homologar B2-01 |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
@@ -22,9 +22,9 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 
 ## Ordem de evolução consolidada em 23/10
 
-1. **P0 — evidência:** fechar R2-05, R2-06, R2-07, R2-02 e B2-01 sem forçar o rodízio.
-2. **P1 — baseline:** recuperar e sanitizar os artefatos efetivamente operacionais antes de editar o fluxo.
-3. **P2 — resiliência:** fallback real B2 → R2 homologado; corrigir a classificação do upstream 403 e publicar v0.5.
+1. **P0 — B2:** recuperar B2-01 e B2-02, começando pelo probe autenticado somente leitura de B2-01.
+2. **P1 — classificação:** fallback real B2 → R2 homologado; publicar v0.5 com precedência do upstream 403.
+3. **P2 — baseline/evidências restantes:** recuperar artefatos operacionais e fechar R2-02, R2-05, R2-06 e R2-07.
 4. **P3 — observabilidade:** implementar monitoramento R2/B2 inicialmente sem bloqueio automático.
 5. **P4 — produção:** definir entrega R2, compatibilidade de URLs, SLOs e rollback.
 

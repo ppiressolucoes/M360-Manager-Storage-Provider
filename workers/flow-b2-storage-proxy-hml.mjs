@@ -54,6 +54,26 @@ async function authorized(request, env) {
   return difference === 0;
 }
 
+async function verifyStorageRead(request, env) {
+  if (!await authorized(request, env)) return json({ error: 'unauthorized' }, 401);
+
+  // A chave-sentinela não corresponde a um arquivo real. Com autenticação,
+  // bucket e capabilities corretos, o B2 deve responder 404 ao HEAD.
+  const probeKey = `m360/featured/${'0'.repeat(64)}.jpg`;
+  const probe = await s3(env, 'HEAD', probeKey);
+  const probeStatus = probe.status;
+  await probe.body?.cancel();
+  const bucketReadVerified = probeStatus === 200 || probeStatus === 404;
+
+  return json({
+    provider: 'backblaze_b2',
+    configured: true,
+    bucket_read_verified: bucketReadVerified,
+    bucket_write_verified: false,
+    probe_status: probeStatus,
+  }, bucketReadVerified ? 200 : 503);
+}
+
 function mediaSignature(bytes, extension) {
   if (extension === 'jpg') return bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
   if (extension === 'png') return [137, 80, 78, 71, 13, 10, 26, 10].every((b, i) => bytes[i] === b);
@@ -193,6 +213,7 @@ export default {
         return json({ provider: 'backblaze_b2', configured, bucket_write_verified: false }, configured ? 200 : 503);
       }
       if (!configured) return json({ error: 'missing_configuration' }, 503);
+      if (path === '/health/storage' && request.method === 'GET') return await verifyStorageRead(request, env);
       if (path === '/upload' && request.method === 'POST') return await upload(request, env);
       const key = path.slice(1);
       if (['GET', 'HEAD'].includes(request.method) && validKey(key)) return await deliver(request, env, ctx, key);

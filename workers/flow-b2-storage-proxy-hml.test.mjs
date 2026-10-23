@@ -35,6 +35,12 @@ function uploadRequest() {
   });
 }
 
+function storageHealthRequest(proxyKey = env.PROXY_KEY) {
+  return new Request('https://worker.example.test/health/storage', {
+    headers: { 'x-proxy-key': proxyKey },
+  });
+}
+
 async function withFetch(responses, test) {
   const originalFetch = globalThis.fetch;
   const calls = [];
@@ -95,4 +101,38 @@ await withFetch([
   assert.deepEqual(calls.map(call => call.options.method), ['HEAD']);
 });
 
-console.log('Worker B2: reconciliação de PUT ambíguo validada.');
+await withFetch([
+  new Response(null, { status: 404 }),
+], async calls => {
+  const response = await worker.fetch(storageHealthRequest(), env, {});
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.deepEqual(body, {
+    provider: 'backblaze_b2',
+    configured: true,
+    bucket_read_verified: true,
+    bucket_write_verified: false,
+    probe_status: 404,
+  });
+  assert.deepEqual(calls.map(call => call.options.method), ['HEAD']);
+});
+
+await withFetch([
+  new Response(null, { status: 403 }),
+], async calls => {
+  const response = await worker.fetch(storageHealthRequest(), env, {});
+  const body = await response.json();
+  assert.equal(response.status, 503);
+  assert.equal(body.bucket_read_verified, false);
+  assert.equal(body.probe_status, 403);
+  assert.deepEqual(calls.map(call => call.options.method), ['HEAD']);
+});
+
+await withFetch([], async calls => {
+  const response = await worker.fetch(storageHealthRequest('invalid-proxy-key'), env, {});
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: 'unauthorized' });
+  assert.deepEqual(calls, []);
+});
+
+console.log('Worker B2: reconciliação de PUT ambíguo e health de storage validados.');

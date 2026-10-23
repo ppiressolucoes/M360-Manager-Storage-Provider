@@ -32,10 +32,21 @@ O mesmo sintoma nas duas contas aponta para um procedimento comum de configuraç
 
 1. se `B2_KEY_ID` e `B2_APPLICATION_KEY` pertencem ao mesmo Application Key;
 2. se a chave está autorizada para o bucket configurado;
-3. se possui no mínimo as capabilities necessárias a `HEAD` e `PUT`, especialmente `readFiles` e `writeFiles`;
+3. se possui no mínimo as capabilities necessárias a `HEAD` e `PUT`, especialmente `listFiles`, `readFiles` e `writeFiles`, além da listagem de nomes de buckets quando exigida pela configuração S3;
 4. se bucket, região e endpoint S3 pertencem à mesma conta/bucket.
 
 `/health` com `configured=true` confirma apenas a presença das variáveis. Não valida credenciais, escopo, capabilities ou acesso ao bucket.
+
+## Plano de correção priorizado para B2
+
+1. Tratar B2-01 primeiro, sem alterar n8n, SP ou cadastro do storage.
+2. No painel Backblaze, confirmar que a Application Key atual está restrita ao bucket correto, em modo Read and Write, sem prefixo incompatível e sem expiração; conferir também a permissão de listar nomes de buckets.
+3. Como o secret de uma Application Key não pode ser conferido novamente no painel, criar um novo par quando houver dúvida de correspondência. Atualizar `B2_KEY_ID` e `B2_APPLICATION_KEY` juntos no Worker, preservando a chave anterior para rollback até a homologação.
+4. Implantar a revisão candidata do Worker e chamar `GET /health/storage` com `X-Proxy-Key` apenas pelo painel/ferramenta segura. Esse endpoint faz um HEAD assinado, não grava objetos e não devolve credenciais.
+5. Gate esperado: HTTP 200, `bucket_read_verified=true`, `bucket_write_verified=false` e `probe_status=404`. HTTP 503 com `probe_status=403` mantém a falha de credencial/capability/escopo.
+6. Somente após o gate de leitura, validar `writeFiles` por uma chamada controlada de upload ou pela próxima chamada real. Repetir o procedimento de forma independente em B2-02.
+
+Não revogar a chave anterior antes da confirmação de B2-01 e não copiar nenhum valor de uma conta B2 para a outra.
 
 ## Decisão técnica
 

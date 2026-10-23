@@ -15,6 +15,7 @@ Não usar binding MEDIA_BUCKET; o acesso B2 é S3 autenticado por Signature V4.
 
 Rotas:
 - GET /health: verifica presença de configuração; não atesta acesso/escrita no bucket.
+- GET /health/storage: exige X-Proxy-Key e executa somente um HEAD assinado sobre uma chave-sentinela; `probe_status=404` e `bucket_read_verified=true` confirmam autenticação, endpoint, bucket e leitura/listagem suficientes para a deduplicação. Não grava objetos nem atesta `writeFiles`.
 - POST /upload: exige X-Proxy-Key e body binário, máximo 10 MiB.
 - GET/HEAD /<portal>/featured/<sha256>.<extensão>: entrega pública de objeto do bucket privado.
 
@@ -24,7 +25,7 @@ Hash é recalculado pelo Worker. Dimensões são fornecidas pelo n8n e validadas
 
 Deduplicação HEAD antes de PUT; chamadas simultâneas da mesma chave ainda podem criar versões adicionais no B2. Cache público de arquivos por hash: um ano, immutable. Só imagens nos caminhos permitidos são expostas; não há listagem pública do bucket.
 
-Validação local realizada: sintaxe e simulações de autenticação inválida, rejeição de hash, upload, deduplicação sequencial, entrega pública e reconciliação de PUT ambíguo. O agente não implantou diretamente; o usuário confirmou deployment da versão anterior e uploads reais nos Workers B2-01 e B2-02. Deduplicação demonstrada em ambos; leitura pública e publicação WordPress confirmadas para B2-02. Detalhes e limites no [registro atualizado](../docs/EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md) e no [registro da falha de 23/10](../docs/FALHA_B2_01_E_RETRY_2026-10-23.md).
+Validação local realizada: sintaxe e simulações de autenticação inválida, rejeição de hash, upload, deduplicação sequencial, entrega pública, reconciliação de PUT ambíguo e health autenticado do storage com respostas upstream 404/403. O agente não implantou diretamente; o usuário confirmou deployment da versão anterior e uploads reais nos Workers B2-01 e B2-02. Deduplicação demonstrada em ambos; leitura pública e publicação WordPress confirmadas para B2-02. Detalhes e limites no [registro atualizado](../docs/EVOLUCAO_B2_E_CONTINUIDADE_2026-10-14.md) e no [registro da falha de 23/10](../docs/FALHA_B2_01_E_RETRY_2026-10-23.md).
 
 B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.workers.dev`, bucket `core360-02-storage-b2-hml` e secrets independentes. Não substituir a configuração de B2-01 ao criar nova conta.
 
