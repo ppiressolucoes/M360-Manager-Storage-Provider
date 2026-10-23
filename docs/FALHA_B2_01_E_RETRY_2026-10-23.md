@@ -24,6 +24,8 @@ Uma saída sanitizada do upload de B2-01 confirmou que a falha ocorreu no primei
 
 Os alertas provam que a saída de erro do upload alcançou o classificador, que a reserva foi finalizada e validada e que o e-mail foi enviado. Eles não provam, isoladamente, a execução de `Restaura Contexto Após Alerta`, a seleção de uma segunda reserva ou o sucesso/erro terminal da execução. Como os dois alertas ocorreram com tentativa 1/3 e 70 minutos de diferença, não há evidência de que B2-02 tenha sido o fallback da ocorrência de B2-01.
 
+A captura posterior da execução completou essa evidência para uma das ocorrências: `Prepara Tentativa`, reserva, normalização, validação, geração de metadados e Switch processaram dois itens ao longo do laço. A primeira tentativa seguiu pelo ramo B2, falhou, foi classificada e finalizada, gerou o alerta e restaurou o contexto. A saída verdadeira de `IF | Pode tentar novamente?` retornou a `Prepara Tentativa`; a segunda reserva selecionou o ramo S3/R2, cujo upload e finalização terminaram com sucesso. Assim, o fallback real entre providers `backblaze_b2 → cloudflare_r2`, preservando o mesmo contexto, está homologado na v0.4. A imagem não demonstra fallback de B2-01 para B2-02.
+
 O status upstream 403 deve prevalecer sobre o envelope HTTP 502. O candidato de `Classifica Falha Upload` foi corrigido para tratar upstream 401/403/404 como `configuracao_storage`, mantendo fallback para outro storage e aplicando cooldown de 60 minutos ao storage defeituoso. A regra passou em teste automatizado, mas ainda não representa a v0.4 publicada.
 
 O mesmo sintoma nas duas contas aponta para um procedimento comum de configuração. Verificar em cada conta, sem copiar valores entre elas:
@@ -57,7 +59,7 @@ Não basta conectar o erro diretamente ao início: isso pode deixar reserva órf
 - `workers/flow-b2-storage-proxy-hml.test.mjs`: simulações locais de reconciliação;
 - `workflows/n8n/storage-media-external/retry-v1/`: instruções, quatro Code nodes completos, hashes e testes locais.
 
-O export baseline do n8n foi substituído por snapshot sanitizado somente depois da montagem, reexportação e auditoria do workflow. A revisão do Worker foi implantada pelo usuário nos dois B2 e o health check foi aprovado. A versão 0.4 do workflow foi publicada; rotação coordenada dos segredos, Error Workflow global e observação da primeira falha real permanecem pendentes.
+O export baseline do n8n foi substituído por snapshot sanitizado somente depois da montagem, reexportação e auditoria do workflow. A revisão do Worker foi implantada pelo usuário nos dois B2 e o health check foi aprovado. A versão 0.4 do workflow foi publicada e seu fallback real B2 → R2 foi homologado. Rotação coordenada dos segredos, Error Workflow global, correção operacional dos dois B2 e publicação do classificador revisado permanecem pendentes.
 
 ## Continuidade do redesenho
 
@@ -79,7 +81,7 @@ O caminho de sucesso do rascunho foi homologado manualmente: a reserva global se
 
 Por decisão do usuário, não serão provocadas falhas para homologar o laço. O comportamento de erro será acompanhado nas próximas chamadas reais. Cada falha de upload confirmada após `Valida Finalização Falha` deve gerar um alerta por e-mail, inclusive quando houver retry; o caminho de sucesso não gera alerta. O e-mail não inclui segredo, token, stack trace, hash, URL, nome ou binário. Falhas não tratadas em outros nodes exigem um Error Workflow separado para cobertura completa.
 
-O usuário concluiu a ramificação lateral `Prepara Alerta Falha → Send E-Mail`, mantendo `Valida Finalização Falha → IF | Pode tentar novamente?` como caminho principal. Não haverá disparo de teste: a mensagem será avaliada na primeira falha real. Essa observação só começa depois de remover dados fixados, resolver a rotação da chave compartilhada, auditar o export final e publicar o rascunho. O alerta atual cobre falhas de upload tratadas; não equivale a um Error Workflow global.
+O usuário concluiu a ramificação lateral `Prepara Alerta Falha → Send E-Mail`, mantendo `Valida Finalização Falha → IF | Pode tentar novamente?` como caminho principal. Não foi provocado um erro de teste; a mensagem e o retorno ao retry foram validados posteriormente por uma ocorrência real. O alerta atual cobre falhas de upload tratadas; não equivale a um Error Workflow global.
 
 A versão 0.3 foi publicada e exportada, mas não passou na auditoria. O JSON mostrou `pinData` em `Start Storage`; `Prepara Alerta Falha` estava ligado à saída `true` de `IF | Pode tentar novamente?`, alertando somente erros com retry, enquanto a saída `false` encerrava sem e-mail; e a saída de erro do Gmail não tinha continuidade. O conteúdo preparado para o e-mail estava sanitizado. O export bruto v0.3, contendo referências da instância e destinatário, permanece fora do Git e não substitui o snapshot v0.2 até a correção.
 
