@@ -8,7 +8,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 | Novo fluxo integral não confirmado | Obter evidência sanitizada de release integral |
 | Operar | B2-01 (12) | HEAD, PUT, deduplicação e entrega pública homologados no deployment atual | Monitorar eventual recorrência do 403 histórico |
-| P0 | B2-02 (13) | Nova Application Key aprovou HEAD ausente e PUT de objeto novo | Reexecutar o mesmo upload para validar deduplicação; manter chave anterior para rollback |
+| P0 | B2-02 (13) | Nova Application Key aprovou HEAD, PUT e deduplicação `existing=true` | Validar entrega pública; depois revogar a chave anterior |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |

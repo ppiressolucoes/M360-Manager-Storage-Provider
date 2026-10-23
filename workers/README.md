@@ -37,6 +37,8 @@ B2-02 recebeu a mesma revisão, mas seu primeiro health autenticado retornou `pr
 
 O PUT controlado posterior de B2-02 criou objeto novo com `existing=false` e `reconciled_after_put_error=false`, aprovando também a escrita com a nova chave. Deduplicação e entrega pública ainda são os gates antes de revogar a chave anterior.
 
+A repetição do mesmo upload retornou `existing=true`, aprovando o HEAD de objeto existente e a deduplicação. Somente a entrega pública permanece como gate de rollback da chave anterior.
+
 Em 23/10/2026, o usuário preservou e forneceu os códigos então implantados nos dois Workers. Os arquivos são idênticos entre si e correspondem à versão do repositório anterior à reconciliação, após normalizar CRLF/LF; a verificação local não encontrou credenciais literais. Assim, o diff candidato está limitado à reconciliação pós-PUT e ao campo de resposta associado. Os anexos não foram duplicados no Git porque o baseline já é recuperável pelo histórico.
 
 Custos não são garantidamente zero: monitorar quotas B2 e Workers. Cache reduz acessos, mas não elimina misses nem operações de upload.

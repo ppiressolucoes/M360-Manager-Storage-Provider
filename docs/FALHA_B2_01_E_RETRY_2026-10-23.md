@@ -66,6 +66,8 @@ Após a rotação coordenada dos dois secrets, o health autenticado de B2-02 pas
 
 O upload controlado seguinte no Worker B2-02 criou um objeto novo com `existing=false` e `reconciled_after_put_error=false`. O PUT foi aprovado sem fallback ou reconciliação, comprovando a capability de escrita da nova Application Key. Hash, URL, nome e metadados específicos do arquivo não foram versionados. A chave anterior permanece disponível até concluir deduplicação e entrega pública.
 
+A reexecução do mesmo upload no B2-02 retornou `existing=true` e `reconciled_after_put_error=false`. O HEAD do objeto existente e a deduplicação sem novo PUT estão aprovados com a nova chave. Resta apenas validar a entrega pela URL pública antes de revogar a Application Key anterior.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
