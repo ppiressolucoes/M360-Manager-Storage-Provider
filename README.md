@@ -13,7 +13,7 @@ Repositório dedicado à gestão de storage externo de mídia: contrato WordPres
 
 - **[Plano de evolução do Core — 23/10/2026](docs/PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md)**
 - **[Falha B2-01 e preparação do retry — 23/10/2026](docs/FALHA_B2_01_E_RETRY_2026-10-23.md)**
-- **[Falha R2-02: configuração da URL pública — 23/10/2026](docs/FALHA_R2_02_PUBLIC_BASE_URL_2026-10-23.md)**
+- **[Falha R2-08: configuração da URL pública — 23/10/2026](docs/FALHA_R2_08_PUBLIC_BASE_URL_2026-10-23.md)**
 - [R2-07 — preparação e homologação, 21/10/2026](docs/R2-07_HOMOLOGACAO_2026-10-21.md)
 - [R2-08 — inclusão no inventário, 23/10/2026](docs/R2-08_HOMOLOGACAO_2026-10-23.md)
 - **[Estado atual e inventário — 20/10/2026](docs/INVENTARIO_E_CONTINUIDADE_2026-10-20.md)**

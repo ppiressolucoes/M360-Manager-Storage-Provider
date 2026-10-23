@@ -18,7 +18,7 @@
 - 13–14/10: arquitetura, reserva/finalização, Cloudinary/R2-01 e expansão B2. B2-02 publicado; detalhes nos registros históricos.
 - 15–20/10: R2-03/R2-04 publicados; R2-05/R2-06 testes isolados e cadastro. Monitoramento solicitado, sem implantação. Atualização de continuidade em 20/10 reúne os artefatos disponíveis; datas dos arquivos não provam execução.
 - 21/10: R2-07 com testes isolados, cadastro inativo confirmado e ativação preparada; publicação integrada permanece pendente.
-- 23/10: R2-08 incluído após health do Worker; documentação e SQL preparados; cadastro confirmado pelo usuário como ID 19 inativo, sem ativação.
+- 23/10: R2-08 incluído após health do Worker; cadastro confirmado como ID 19 inativo; `PUBLIC_BASE_URL` corrigida e primeiro upload isolado aprovado, ainda sem deduplicação, leitura pública ou ativação.
 - 23/10: backlog recuperado e plano de evolução consolidado em `docs/PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md`. A rodada foi documental: nenhuma ativação, importação n8n, procedure ou chamada a runtime operacional foi executada.
 - 23/10: primeira falha real sanitizada do B2-01 analisada; reconciliação do Worker e pacote retry v1 preparados e testados localmente. O usuário implantou os dois Workers B2, validou seus health checks e montou o retry no rascunho n8n; o agente não alterou diretamente esses runtimes. Snapshot v0.2 sanitizado e auditado localmente, ainda sem publicação/homologação funcional.
 

@@ -73,7 +73,7 @@ const missingR2PublicBase = await run('classifica-falha-upload.js', [{
   json: {
     ...normalized[0].json,
     provider: 'cloudflare_r2',
-    storage_id: 11,
+    storage_id: 19,
     error: {
       message: '500 - "{\\"success\\":false,\\"provider\\":\\"cloudflare_r2\\",\\"error\\":\\"public_base_url_not_configured\\"}"',
       code: 'ERR_BAD_RESPONSE',

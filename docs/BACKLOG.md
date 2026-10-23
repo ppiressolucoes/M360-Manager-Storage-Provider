@@ -6,7 +6,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | --- | --- | --- | --- |
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
-| P0 | R2-02 (11) | Falha real: Worker respondeu `public_base_url_not_configured` | Configurar `PUBLIC_BASE_URL`, reimplantar e reconciliar o mesmo upload |
+| P0 | R2-02 (11) | Novo fluxo integral não confirmado; item foi reutilizado apenas como massa do teste R2-08 | Obter evidência sanitizada de release integral |
 | Operar | B2-01 (12) | HEAD, PUT, deduplicação e entrega pública homologados no deployment atual | Monitorar eventual recorrência do 403 histórico |
 | Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
@@ -14,7 +14,7 @@ Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-06 (17) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
-| P0 | R2-08 (19) | Cadastrado e confirmado inativo; Worker v1.0.0 saudável | Homologar upload/leitura/deduplicação antes de preparar ativação |
+| P0 | R2-08 (19) | Inativo; `PUBLIC_BASE_URL` corrigida e primeiro upload isolado aprovado (`existing=false`) | Validar URL pública e repetir upload para `existing=true` |
 | P1 | Baseline operacional | Export v0.4 e nove Code nodes recuperados/sanitizados; Worker R2 e DDLs ainda incompletos | Recuperar Worker R2 e `SHOW CREATE PROCEDURE` |
 | P2 | Retry de até três tentativas | v0.4 homologada em falha real: B2 falhou, retry reservou R2 e concluiu com sucesso | Aplicar classificador candidato e publicar/auditar v0.5 |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |

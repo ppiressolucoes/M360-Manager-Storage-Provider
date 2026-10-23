@@ -79,7 +79,7 @@ Depois da publicação da v0.4, B2-01 e B2-02 emitiram alertas reais independent
 
 Os e-mails isoladamente confirmam classificação, finalização validada e envio do alerta. Uma captura posterior da execução confirmou também `Restaura Contexto Após Alerta`, saída verdadeira do IF, segunda passagem por preparação/reserva/normalização/Switch, seleção de Cloudflare R2 e `Valida Finalização Sucesso`. O retry entre providers está homologado. Os dois Workers B2 foram recuperados e homologados. Rotação da chave de proxy compartilhada, Error Workflow global e publicação do classificador revisado permanecem pendentes.
 
-Uma falha real posterior de R2-02 retornou HTTP 500 com `public_base_url_not_configured`. O candidato também reconhece esse código como `configuracao_storage`, mantendo fallback e aplicando cooldown de 60 minutos. A correção operacional é configurar `PUBLIC_BASE_URL` no runtime do Worker; o valor existente no cadastro do Core não é injetado no Cloudflare.
+Um teste isolado posterior de R2-08 retornou HTTP 500 com `public_base_url_not_configured`. O candidato também reconhece esse código como `configuracao_storage`, mantendo fallback e aplicando cooldown de 60 minutos. A correção operacional é configurar `PUBLIC_BASE_URL` no runtime do Worker; o valor existente no cadastro do Core não é injetado no Cloudflare. O item de teste originou-se de uma reserva R2-02, mas o endpoint foi sobrescrito para R2-08; portanto, a ocorrência não deve ser atribuída ao R2-02.
 
 ## Progresso informado
 
@@ -116,6 +116,6 @@ Uma falha real posterior de R2-02 retornou HTTP 500 com `public_base_url_not_con
 - 23/10/2026: captura integral de uma execução confirmou alerta, restauração do contexto, retorno do IF, segunda reserva global, mudança de `backblaze_b2` para `cloudflare_r2`, upload e finalização com sucesso;
 - 23/10/2026: regra candidata corrigida para priorizar upstream 401/403/404 como `configuracao_storage`, cooldown de 60 minutos e fallback ainda permitido; teste de regressão aprovado, ainda não implantado no n8n;
 - 23/10/2026: B2-01 e B2-02 recuperados e homologados em leitura, escrita, deduplicação e entrega pública; B2-02 exigiu nova Application Key;
-- 23/10/2026: erro real `public_base_url_not_configured` de R2-02 acrescentado às falhas de configuração com teste de regressão;
-- próximo passo operacional: configurar `PUBLIC_BASE_URL` em R2-02, reconciliar o upload e aplicar/publicar/auditar o classificador v0.5; rotacionar a chave de proxy compartilhada e criar Error Workflow para falhas não tratadas;
+- 23/10/2026: erro `public_base_url_not_configured` do teste isolado R2-08 acrescentado às falhas de configuração com teste de regressão; variável corrigida e primeiro PUT aprovado;
+- próximo passo operacional: concluir URL pública/deduplicação do R2-08 e aplicar/publicar/auditar o classificador v0.5; rotacionar a chave de proxy compartilhada e criar Error Workflow para falhas não tratadas;
 - códigos implantados de B2-01 e B2-02 preservados e comparados; ambos correspondem ao baseline pré-reconciliação.
