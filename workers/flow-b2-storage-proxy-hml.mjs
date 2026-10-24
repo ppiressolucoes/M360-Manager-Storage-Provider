@@ -123,8 +123,12 @@ async function upload(request, env) {
   if (await digest(bytes) !== sha) return json({ error: 'sha256_mismatch' }, 400);
 
   const previous = await s3(env, 'HEAD', key);
+  const lookupStatus = previous.status;
   let existing = previous.status === 200;
-  if (!existing && previous.status !== 404) {
+  // Algumas chaves permitem PUT, mas não distinguem uma chave ausente no HEAD.
+  // O conteúdo validado pelo SHA torna segura a tentativa idempotente de escrita.
+  const lookupBypassed = previous.status === 403;
+  if (!existing && previous.status !== 404 && !lookupBypassed) {
     await previous.body?.cancel();
     return json({ error: 'b2_lookup_failed', upstream_status: previous.status }, 502);
   }
@@ -181,6 +185,8 @@ async function upload(request, env) {
     public_id: `${folder}/${sha}`, object_key: key,
     secure_url: url, url, width, height, mime_type: mime, bytes: size, existing,
     original_filename: (request.headers.get('x-original-filename') ?? '').trim(),
+    lookup_status: lookupStatus,
+    lookup_bypassed: lookupBypassed,
     reconciled_after_put_error: reconciledAfterPutError,
   });
 }

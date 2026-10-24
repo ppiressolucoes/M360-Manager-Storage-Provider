@@ -1,13 +1,13 @@
 # Backlog compartilhado — Core Manager Storage Provider
 
-Atualizado em 23/10/2026, Brasília. Referências: [inventário atual](INVENTARIO_E_CONTINUIDADE_2026-10-20.md) e [plano de evolução](PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md).
+Atualizado em 24/10/2026, Brasília. Referências: [inventário atual](INVENTARIO_E_CONTINUIDADE_2026-10-20.md) e [plano de evolução](PLANO_EVOLUCAO_CORE_STORAGE_PROVIDER_2026-10-23.md).
 
 | Prioridade | Iniciativa | Estado | Próxima ação / gate |
 | --- | --- | --- | --- |
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 (11) | Novo fluxo integral não confirmado; item foi reutilizado apenas como massa do teste R2-08 | Obter evidência sanitizada de release integral |
-| P0 | B2-01 (12) | Chave atual: m360=404, pel/trilhas=403; objetos PEL históricos comprovam configuração anterior funcional | Auditar escopo/data da chave atual e executar HEAD autenticado direto sobre objeto PEL existente antes de rotacionar |
+| P0 | B2-01 (12) | Recorrência PEL confirmada em 24/10; contorno candidato permite PUT após HEAD=403 | Implantar Worker, provar PUT PEL e conferir `lookup_bypassed=true`; se PUT falhar, corrigir/rotacionar chave |
 | Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |

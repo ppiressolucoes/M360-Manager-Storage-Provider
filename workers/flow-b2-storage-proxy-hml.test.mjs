@@ -102,6 +102,29 @@ await withFetch([
 });
 
 await withFetch([
+  new Response(null, { status: 403 }),
+  new Response(null, { status: 200 }),
+], async calls => {
+  const response = await worker.fetch(uploadRequest(), env, {});
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.existing, false);
+  assert.equal(body.lookup_status, 403);
+  assert.equal(body.lookup_bypassed, true);
+  assert.equal(body.reconciled_after_put_error, false);
+  assert.deepEqual(calls.map(call => call.options.method), ['HEAD', 'PUT']);
+});
+
+await withFetch([
+  new Response(null, { status: 401 }),
+], async calls => {
+  const response = await worker.fetch(uploadRequest(), env, {});
+  assert.equal(response.status, 502);
+  assert.deepEqual(await response.json(), { error: 'b2_lookup_failed', upstream_status: 401 });
+  assert.deepEqual(calls.map(call => call.options.method), ['HEAD']);
+});
+
+await withFetch([
   new Response(null, { status: 404 }),
   new Response(null, { status: 404 }),
   new Response(null, { status: 404 }),

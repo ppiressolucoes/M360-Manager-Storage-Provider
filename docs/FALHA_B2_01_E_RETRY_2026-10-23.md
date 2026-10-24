@@ -80,6 +80,8 @@ O health multiprefixo executado em B2-01 retornou m360=404, pel=403 e trilhas=40
 
 Antes de rotacionar, é necessário comparar a Application Key atualmente referenciada pelo Worker com seu escopo no painel: bucket, tipo Read and Write, file name prefix, listagem de nomes de buckets, criação e expiração. O teste conclusivo deve executar, pelo health autenticado, um HEAD direto ao B2 sobre a chave de um objeto PEL histórico; abrir a URL pública não basta, pois a resposta pode vir do cache. O 403 do HEAD de uma chave inexistente ainda pode indicar ausência de permissão de listagem ou escopo de prefixo e continua incompatível com o algoritmo de deduplicação anterior ao PUT.
 
+Em 24/10/2026, uma nova chamada real de `pel/featured` confirmou que a execução ainda para no lookup anterior à escrita: `b2_lookup_failed`, HTTP 502 e upstream 403. Como solução de contorno candidata, somente esse `HEAD=403` passa a autorizar o PUT da chave content-addressed. O Worker mantém bloqueio para 401, 5xx e outros status, e sinaliza sucesso com `lookup_status=403` e `lookup_bypassed=true`. A medida é segura contra alteração de conteúdo porque a chave contém o SHA-256 validado do próprio binário, mas pode criar nova versão do mesmo objeto no B2. Se o PUT também falhar, não há sucesso artificial e o fallback do Core permanece ativo.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
