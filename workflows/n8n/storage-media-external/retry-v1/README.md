@@ -7,6 +7,7 @@ Este pacote foi preparado após a primeira falha real sanitizada de upload em B2
 - no máximo três tentativas totais por arquivo;
 - cada falha é classificada antes da finalização;
 - a reserva corrente precisa ser finalizada com sucesso antes de nova reserva;
+- uma execução já finalizada não pode ser retomada a partir do upload para validar sucesso, pois reutilizaria um token consumido; iniciar novamente em `Start Storage`;
 - falha transitória ou escrita ambígua aplica cooldown de 5 minutos ao storage;
 - falha de configuração do storage aplica cooldown de 60 minutos;
 - erro do arquivo/entrada não tenta outro storage;
