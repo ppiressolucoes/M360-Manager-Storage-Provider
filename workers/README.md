@@ -29,6 +29,8 @@ Validação local realizada: sintaxe e simulações de autenticação inválida,
 
 B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.workers.dev`, bucket `core360-02-storage-b2-hml` e secrets independentes. Não substituir a configuração de B2-01 ao criar nova conta.
 
+Em 24/10/2026 foi aprovada a equalização de B2-02 com a revisão mais recente implantada em B2-01. O artefato canônico é `flow-b2-storage-proxy-hml.mjs`, SHA-256 `3f0fab9386b1063d4b0a4f825c646e712602a4d220650a8ffd396a8ba4017f3a`. O deployment de B2-02 permanece pendente de confirmação. Copiar apenas o código: bucket, região, endpoint, URL pública e os três secrets continuam específicos da segunda conta.
+
 Para o retry v1, publicar exatamente a mesma revisão reconciliadora em `flow-b2-storage-proxy-hml` (B2-01) e `flow-b2-02-storage-proxy-hml` (B2-02). Cada deployment conserva suas próprias variáveis `B2_BUCKET_NAME`, `B2_REGION`, `B2_S3_ENDPOINT`, `PUBLIC_BASE_URL` e seus próprios secrets `B2_KEY_ID`, `B2_APPLICATION_KEY`, `PROXY_KEY`. Não copiar valores entre contas e não versioná-los.
 
 Em 23/10/2026, B2-01 respondeu ao health autenticado de storage com `probe_status=404` e `bucket_read_verified=true`. Em seguida, um upload controlado criou objeto novo com `existing=false` e `reconciled_after_put_error=false`, aprovando o PUT do deployment atual. A repetição do mesmo upload retornou `existing=true`, comprovando HEAD de objeto existente e deduplicação sem novo PUT; a entrega pela URL pública também foi validada. `bucket_write_verified=false` permanece na resposta do health por desenho: a rota é somente leitura e não persiste estado de homologação.

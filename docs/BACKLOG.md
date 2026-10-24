@@ -8,7 +8,7 @@ Atualizado em 24/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 (11) | Novo fluxo integral não confirmado; item foi reutilizado apenas como massa do teste R2-08 | Obter evidência sanitizada de release integral |
 | P0 | B2-01 (12) | Upload PEL aprovado; finalização da reexecução parcial rejeitada corretamente porque o token anterior já havia sido consumido | Executar fluxo integral desde Start para obter nova reserva; se B2-01 for selecionado, confirmar `existing=true`, finalização e URL |
-| Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
+| P0 | B2-02 (13) | Nova chave homologada; paridade com a revisão mais recente do Worker ainda não confirmada | Implantar o mesmo artefato de B2-01 preservando configuração própria; validar health, upload e deduplicação antes de operar |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |
 | P0 | R2-05 (16) | Testes isolados e cadastro inativo confirmados | Consultar estado real; confirmar ativação e publicação integrada |
