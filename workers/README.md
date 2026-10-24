@@ -2,7 +2,7 @@
 
 Arquivo para colar no editor Cloudflare: `flow-b2-storage-proxy-hml.mjs` (Worker Module, sem dependências).
 
-Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. O usuário implantou a revisão nos Workers B2-01 e B2-02 e validou `/health` com `configured=true`. Depois, B2-01 aprovou health autenticado e upload controlado de objeto novo; B2-02 ainda precisa repetir esses gates na revisão atual.
+Em 23/10/2026, após uma resposta real `b2_upload_failed` com status upstream 520, o arquivo passou a reconciliar PUT ambíguo com um novo HEAD. Se o objeto existir com o tamanho esperado, retorna sucesso com `reconciled_after_put_error=true`; caso contrário, retorna estado estruturado para o fallback. O usuário implantou a revisão nos Workers B2-01 e B2-02 e validou `/health` com `configured=true`. Depois, os dois Workers aprovaram uploads controlados; a revisão mais recente de B2-02 ainda precisa concluir deduplicação e entrega pública.
 
 Worker: `flow-b2-storage-proxy-hml.core360.workers.dev`.
 Bucket privado confirmado pelo usuário: `core360-storage-b2-hml`.
@@ -29,7 +29,7 @@ Validação local realizada: sintaxe e simulações de autenticação inválida,
 
 B2-02 utiliza o mesmo código, Worker `flow-b2-02-storage-proxy-hml.core360.workers.dev`, bucket `core360-02-storage-b2-hml` e secrets independentes. Não substituir a configuração de B2-01 ao criar nova conta.
 
-Em 24/10/2026 foi aprovada a equalização de B2-02 com a revisão mais recente implantada em B2-01. O artefato canônico é `flow-b2-storage-proxy-hml.mjs`, SHA-256 `3f0fab9386b1063d4b0a4f825c646e712602a4d220650a8ffd396a8ba4017f3a`. O deployment de B2-02 permanece pendente de confirmação. Copiar apenas o código: bucket, região, endpoint, URL pública e os três secrets continuam específicos da segunda conta.
+Em 24/10/2026 foi aprovada e confirmada a equalização de B2-02 com a revisão mais recente implantada em B2-01. O artefato canônico é `flow-b2-storage-proxy-hml.mjs`, SHA-256 `3f0fab9386b1063d4b0a4f825c646e712602a4d220650a8ffd396a8ba4017f3a`. A presença de `lookup_status` e `lookup_bypassed` na resposta real comprova o novo contrato em runtime. Um objeto PEL novo foi gravado pelo caminho normal, com `lookup_status=404`, `lookup_bypassed=false`, `existing=false` e `reconciled_after_put_error=false`. Bucket, região, endpoint, URL pública e os três secrets permaneceram específicos da segunda conta. Restam repetir o mesmo binário e validar sua URL pública na revisão atual.
 
 Para o retry v1, publicar exatamente a mesma revisão reconciliadora em `flow-b2-storage-proxy-hml` (B2-01) e `flow-b2-02-storage-proxy-hml` (B2-02). Cada deployment conserva suas próprias variáveis `B2_BUCKET_NAME`, `B2_REGION`, `B2_S3_ENDPOINT`, `PUBLIC_BASE_URL` e seus próprios secrets `B2_KEY_ID`, `B2_APPLICATION_KEY`, `PROXY_KEY`. Não copiar valores entre contas e não versioná-los.
 
