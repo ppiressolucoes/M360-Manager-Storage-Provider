@@ -16,6 +16,7 @@ Atualizado em 24/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | P0 | R2-07 (18) | Testes isolados e cadastro inativo confirmados em 21/10 | Revisar/efetivar ativação preparada e confirmar publicação integrada |
 | P0 | R2-08 (19) | Ativo em homologação; upload, URL pública e deduplicação isolados aprovados | Observar seleção natural, finalização e publicação integrada |
 | P1 | Baseline operacional | Export v0.4 e nove Code nodes recuperados/sanitizados; Worker R2 e DDLs ainda incompletos | Recuperar Worker R2 e `SHOW CREATE PROCEDURE` |
+| P1 | Observabilidade B2 degradada | Worker informa `lookup_status` e `lookup_bypassed`, mas sucesso com bypass ainda não gera sinal operacional | Persistir os campos na finalização e alertar quando `lookup_bypassed=true` |
 | P2 | Retry de até três tentativas | v0.4 homologada em falha real: B2 falhou, retry reservou R2 e concluiu com sucesso | Aplicar classificador candidato e publicar/auditar v0.5 |
 | P3 | Monitoramento R2/B2 | Objetivo aprovado, não implantado | Fechar APIs, acesso de leitura, modelo, limites e canal de alerta |
 | P4 | Entrega R2 de produção | URLs `r2.dev` usadas em homologação | Planejar domínio/CDN, compatibilidade e rollback |

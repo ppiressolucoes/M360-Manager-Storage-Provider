@@ -84,6 +84,14 @@ Em 24/10/2026, uma nova chamada real de `pel/featured` confirmou que a execuçã
 
 Após a implantação, a execução que havia falhado foi repetida com o mesmo binário e o mesmo B2-01. O upload concluiu com `lookup_status=404`, `lookup_bypassed=false`, `existing=false` e `reconciled_after_put_error=false`. Portanto, o B2 autorizou tanto a consulta de ausência quanto o PUT no caminho PEL, e o contorno não foi exercitado nessa prova. O 403 anterior deve ser tratado como comportamento não persistente até nova evidência; permanecem como gates a repetição do mesmo objeto, esperando `lookup_status=200` e `existing=true`, a entrega pública e o monitoramento de recorrência.
 
+## Aprendizado e limite da garantia
+
+A revisão que adicionou o bypass não alterou o signer AWS V4, o endpoint, o bucket nem as credenciais usadas no HEAD. Assim, a mudança posterior de 403 para 404 não pode ser atribuída ao novo ramo do código; ela aponta para uma condição externa ou intermitente, ainda sem causa-raiz comprovada. Um novo deployment pode coincidir com renovação de isolate ou propagação de configuração, mas a evidência disponível não permite afirmar que esse foi o mecanismo.
+
+A garantia estrutural agora é de continuidade, não de disponibilidade do B2: se o HEAD voltar a 403, o Worker tentará o PUT da chave content-addressed; se o PUT responder com sucesso, a chamada conclui em modo degradado e informa `lookup_bypassed=true`; se o PUT também falhar, o Worker retorna erro explícito e o Core finaliza a reserva antes de selecionar outro storage. Não há garantia de deduplicação quando o lookup é ignorado, nem de que permissões ou disponibilidade upstream não voltem a falhar.
+
+Não se recomenda uma quarta correção reativa sem nova evidência. A próxima evolução deve tornar o sucesso degradado observável: persistir `lookup_status` e `lookup_bypassed` na finalização e gerar aviso quando houver bypass, mesmo com PUT aprovado. Uma recorrência com `lookup_bypassed=true` e sucesso comprova o contorno; uma recorrência em que HEAD e PUT retornem 403 comprova que a credencial precisa ser corrigida ou rotacionada.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:

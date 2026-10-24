@@ -39,6 +39,8 @@ Após uma recorrência em B2-01, o health multiprefixo retornou m360=404, pel=40
 
 Em 24/10/2026 foi preparado e implantado um contorno para a recorrência PEL em B2-01: o 403 do HEAD de deduplicação não encerra mais a chamada e o Worker tenta o PUT. Se o PUT for autorizado, o upload conclui com `lookup_bypassed=true`; se também retornar 403, a falha continua sendo tratada como configuração de storage e a credencial deve ser corrigida. A reexecução do mesmo binário que havia falhado concluiu pelo caminho normal, com `lookup_status=404`, `lookup_bypassed=false`, `existing=false` e PUT aprovado. Assim, o bypass está coberto localmente, mas não foi necessário na prova real; deduplicação PEL e entrega pública ainda devem ser confirmadas para essa ocorrência.
 
+O código do bypass não altera assinatura, endpoint ou credenciais do HEAD; portanto, não explica por si só a mudança observada de 403 para 404 após o deployment. A causa-raiz permanece aberta e pode voltar a ocorrer. A garantia desta revisão é que um novo HEAD=403 não encerra imediatamente o upload: haverá tentativa de PUT e, se ela também falhar, o Core poderá seguir pelo tratamento de falha e fallback. Sucessos com `lookup_bypassed=true` devem ser monitorados como operação degradada, pois não há deduplicação confirmada e o B2 pode criar nova versão do objeto.
+
 O PUT controlado posterior de B2-02 criou objeto novo com `existing=false` e `reconciled_after_put_error=false`, aprovando também a escrita com a nova chave. Deduplicação e entrega pública ainda são os gates antes de revogar a chave anterior.
 
 A repetição do mesmo upload retornou `existing=true`, aprovando o HEAD de objeto existente e a deduplicação. Somente a entrega pública permanece como gate de rollback da chave anterior.
