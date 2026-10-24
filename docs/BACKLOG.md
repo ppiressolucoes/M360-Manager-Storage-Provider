@@ -7,7 +7,7 @@ Atualizado em 24/10/2026, Brasília. Referências: [inventário atual](INVENTARI
 | Preservar | Cloudinary | Sucesso homologado | Preservar legado; CLOUDINARY-07 inativo |
 | Operar | R2-01 | Publicação confirmada | Monitorar |
 | P0 | R2-02 (11) | Novo fluxo integral não confirmado; item foi reutilizado apenas como massa do teste R2-08 | Obter evidência sanitizada de release integral |
-| P0 | B2-01 (12) | Recorrência PEL confirmada em 24/10; contorno candidato permite PUT após HEAD=403 | Implantar Worker, provar PUT PEL e conferir `lookup_bypassed=true`; se PUT falhar, corrigir/rotacionar chave |
+| P0 | B2-01 (12) | Contorno implantado; reexecução PEL concluiu normalmente com HEAD=404, PUT aprovado e sem bypass | Repetir o mesmo binário para confirmar HEAD=200/`existing=true`, validar URL e monitorar recorrência do 403 |
 | Operar | B2-02 (13) | Nova Application Key homologada: HEAD, PUT, deduplicação e entrega pública aprovados | Revogar chave anterior e repetir health autenticado |
 | Operar | R2-03 (14) | Publicação confirmada | Monitorar |
 | Operar | R2-04 (15) | Publicação confirmada | Monitorar |

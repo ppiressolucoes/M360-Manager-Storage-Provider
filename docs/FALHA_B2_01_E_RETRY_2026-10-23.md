@@ -82,6 +82,8 @@ Antes de rotacionar, é necessário comparar a Application Key atualmente refere
 
 Em 24/10/2026, uma nova chamada real de `pel/featured` confirmou que a execução ainda para no lookup anterior à escrita: `b2_lookup_failed`, HTTP 502 e upstream 403. Como solução de contorno candidata, somente esse `HEAD=403` passa a autorizar o PUT da chave content-addressed. O Worker mantém bloqueio para 401, 5xx e outros status, e sinaliza sucesso com `lookup_status=403` e `lookup_bypassed=true`. A medida é segura contra alteração de conteúdo porque a chave contém o SHA-256 validado do próprio binário, mas pode criar nova versão do mesmo objeto no B2. Se o PUT também falhar, não há sucesso artificial e o fallback do Core permanece ativo.
 
+Após a implantação, a execução que havia falhado foi repetida com o mesmo binário e o mesmo B2-01. O upload concluiu com `lookup_status=404`, `lookup_bypassed=false`, `existing=false` e `reconciled_after_put_error=false`. Portanto, o B2 autorizou tanto a consulta de ausência quanto o PUT no caminho PEL, e o contorno não foi exercitado nessa prova. O 403 anterior deve ser tratado como comportamento não persistente até nova evidência; permanecem como gates a repetição do mesmo objeto, esperando `lookup_status=200` e `existing=true`, a entrega pública e o monitoramento de recorrência.
+
 ## Decisão técnica
 
 O fallback deve ocorrer dentro do subworkflow, não reiniciando toda a publicação:
