@@ -55,3 +55,5 @@ Prepara Tentativa Registro WP
 ```
 
 `Prepara Tentativa` deve limitar a três tentativas totais. `Classifica Falha` deve manter separadamente o contexto original e os dados sanitizados da falha. `Restaura Contexto` deve devolver o contrato original ao HTTP Request. A revisão visual não comprova esses três requisitos nem a publicação do workflow.
+
+O node `Prepara Tentativa Registro WP` foi criado no editor em 28/10/2026. Seu código candidato, com limite de três tentativas e preservação do contrato, foi versionado em `workflows/n8n/web-extrator-detalhes-m360-v0.3/`. Aplicação e execução no n8n ainda aguardam confirmação.
