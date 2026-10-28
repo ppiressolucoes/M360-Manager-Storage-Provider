@@ -49,6 +49,8 @@ Body JSON:
 
 Retorna `attachment_id` e `existing`. Uma repetição com o mesmo hash devolve o attachment já criado. O campo `provider` é opcional apenas para compatibilidade: quando ausente, o endpoint mantém o comportamento Cloudinary legado.
 
+Essa idempotência permite repetir somente o registro após falhas de transporte ou respostas ambíguas. Um HTTP 522 da Cloudflare indica timeout de conexão com a origem, não rejeição do payload pelo plugin: aguardar o `retry_after` informado e não refazer upload, reserva ou finalização do storage.
+
 ### Associar ao post PT-BR
 
 `POST /wp-json/m360/v1/external-featured-media/assign`
