@@ -34,3 +34,24 @@ Registrar Provider Mídia Virtual WP
 Usar no máximo três tentativas totais. Respostas 400, 401, 403 e 404 devem ser tratadas como entrada, autenticação, autorização ou configuração e não repetidas automaticamente. Outros 5xx podem ser classificados como transitórios somente quando não houver indicação contrária. O contexto de mídia deve ser preservado; não transportar credenciais nos nodes de classificação ou alerta.
 
 Esta topologia ainda é recomendação, não implantação confirmada. Para implementá-la com segurança, recuperar primeiro o export sanitizado do workflow que contém `Registrar Provider Mídia Virtual WP`.
+
+## Auditoria visual do desenho v0.3
+
+O desenho apresentado em 28/10/2026 ligou a saída de erro de `Registrar Provider Mídia Virtual WP` a `Wait 120s` e retornou diretamente ao mesmo HTTP Request. O acerto principal é não retornar a `CALL | Manager Storage Provider`: upload, reserva e finalização do storage não são repetidos.
+
+O laço ainda não deve ser considerado concluído ou pronto para publicação. A saída de erro precisa passar antes por classificação e limite de tentativas. Sem esses gates, erros definitivos como 400, 401 e 403 também aguardam e repetem indefinidamente. Além disso, deve ser confirmado se a saída de erro do HTTP Request conserva o contrato de mídia; se ela produzir somente o objeto de erro, o retorno direto ao node perderá os campos usados no body.
+
+Topologia mínima para fechar a revisão:
+
+```text
+Prepara Tentativa Registro WP
+  → Registrar Provider Mídia Virtual WP
+      ├─ sucesso → fluxo existente
+      └─ erro → Classifica Falha Registro WP
+                   → IF | Pode repetir registro?
+                       ├─ true → Wait 120s → Restaura Contexto Registro WP
+                       │          → Prepara Tentativa Registro WP
+                       └─ false → Alerta sanitizado → Stop and Error
+```
+
+`Prepara Tentativa` deve limitar a três tentativas totais. `Classifica Falha` deve manter separadamente o contexto original e os dados sanitizados da falha. `Restaura Contexto` deve devolver o contrato original ao HTTP Request. A revisão visual não comprova esses três requisitos nem a publicação do workflow.
